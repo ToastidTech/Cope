@@ -1,0 +1,31 @@
+{
+  "name": "Cope — Mental Health Buddy",
+  "short_name": "Cope",
+  "description": "Your personal mental health companion. Mood tracking, breathing, journaling, affirmations, and crisis support.",
+  "start_url": "/cope/index.html",
+  "scope": "/cope/",
+  "display": "standalone",
+  "background_color": "#f5f0f8",
+  "theme_color": "#08080f",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/cope/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/cope/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/cope/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
