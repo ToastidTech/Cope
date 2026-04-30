@@ -1450,7 +1450,11 @@ function sendMessageText(text) {
   showTyping();
 
   // Build messages for API
-  var messages = chatHistory.slice(-20); // last 20 for context
+  var messages = chatHistory.slice(-20).filter(function(m, i, arr) {
+  // Drop leading assistant messages
+  var firstUserIdx = arr.findIndex(function(x) { return x.role === 'user'; });
+  return arr.indexOf(m) >= firstUserIdx;
+});
 
   // Call Claude API
   fetch('https://muddy-violet-2a0d.toastidtechllc.workers.dev/', {
