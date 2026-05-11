@@ -1,4 +1,4 @@
-yupconst CACHE = 'cope-v3';
+yupconst CACHE = 'cope-v4';
 const ASSETS = [
   '/Cope/',
   '/Cope/index.html',
