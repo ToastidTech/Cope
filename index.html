@@ -1460,7 +1460,8 @@ function sendMessageText(text) {
   fetch('https://muddy-violet-2a0d.toastidtechllc.workers.dev/', {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      'X-API-Key': 'cope_pwa_sk_7f3b9a2e1c8d4f6a0e5b2c9d3f8a1b4c7e2d6f9a8e1b3c5d7f0a9e2b4c6d8f1a'
     },
     body: JSON.stringify({
       model: 'claude-3-5-haiku-20241022',
