@@ -283,253 +283,154 @@
     .g-text strong { color: var(--lavender); }
 
     /* ══════════════════════════════════
-       COPE AI CHAT SCREEN
+       ASMR SECTION
     ══════════════════════════════════ */
-    #screen-chat {
+    #screen-asmr {
       display: none;
       flex-direction: column;
       padding: 0;
       height: calc(100dvh - calc(env(safe-area-inset-bottom) + 70px) - calc(env(safe-area-inset-top)));
     }
-    #screen-chat.active { display: flex; }
+    #screen-asmr.active { display: flex; }
 
-    .chat-header {
+    .asmr-header {
       padding: 20px 20px 14px;
       border-bottom: 1px solid var(--border);
       background: rgba(8,8,15,0.9);
       backdrop-filter: blur(20px);
       flex-shrink: 0;
-      position: relative;
-      z-index: 10;
     }
+    .asmr-title-row {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 4px;
+    }
+    .asmr-title-row .page-title { margin-bottom: 0; }
+    .asmr-sub { font-size: 0.78rem; color: var(--dim); }
 
-    .chat-header-inner {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .chat-avatar {
-      width: 42px; height: 42px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, rgba(184,159,216,0.3), rgba(201,132,154,0.2));
-      border: 1px solid rgba(184,159,216,0.3);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.2rem;
-      flex-shrink: 0;
-      box-shadow: 0 0 20px rgba(184,159,216,0.15);
-      animation: avatarPulse 4s ease-in-out infinite;
-    }
-    @keyframes avatarPulse {
-      0%,100% { box-shadow: 0 0 20px rgba(184,159,216,0.15); }
-      50%      { box-shadow: 0 0 30px rgba(184,159,216,0.3); }
-    }
-
-    .chat-header-text { flex: 1; }
-    .chat-name {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 1.1rem; color: var(--white); font-weight: 600;
-      line-height: 1;
-    }
-    .chat-status {
-      font-size: 0.65rem; color: var(--green); letter-spacing: 1.5px;
-      text-transform: uppercase; margin-top: 3px; display: flex; align-items: center; gap: 5px;
-    }
-    .chat-status::before {
-      content: ''; width: 5px; height: 5px; border-radius: 50%;
-      background: var(--green);
-      box-shadow: 0 0 6px var(--green);
-      display: inline-block;
-      animation: statusPulse 2s ease-in-out infinite;
-    }
-    @keyframes statusPulse {
-      0%,100% { opacity: 1; }
-      50%      { opacity: 0.4; }
-    }
-
-    .chat-clear-btn {
-      background: none; border: 1px solid var(--border); border-radius: 10px;
-      padding: 6px 10px; color: var(--dim); font-size: 0.68rem;
-      font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all 0.2s;
-      letter-spacing: 0.5px;
-    }
-    .chat-clear-btn:hover { border-color: rgba(184,159,216,0.3); color: var(--lavender); }
-
-    .chat-disclaimer {
-      margin: 12px 20px 0;
-      padding: 10px 14px;
-      background: rgba(201,132,154,0.06);
-      border: 1px solid rgba(201,132,154,0.15);
-      border-radius: 12px;
-      font-size: 0.68rem;
-      color: var(--dim);
-      line-height: 1.5;
-      text-align: center;
-    }
-    .chat-disclaimer strong { color: rgba(201,132,154,0.7); }
-
-    /* Messages area */
-    .chat-messages {
-      flex: 1;
-      overflow-y: auto;
-      padding: 16px 16px 8px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
+    .asmr-playlist {
+      flex: 1; overflow-y: auto;
+      padding: 14px 16px 8px;
+      display: flex; flex-direction: column;
+      gap: 10px;
       scrollbar-width: none;
     }
-    .chat-messages::-webkit-scrollbar { display: none; }
+    .asmr-playlist::-webkit-scrollbar { display: none; }
 
-    /* Message bubbles */
-    .msg {
-      display: flex;
-      gap: 8px;
-      animation: msgIn 0.3s cubic-bezier(0.22,1,0.36,1) both;
-    }
-    @keyframes msgIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to   { opacity: 1; transform: translateY(0); }
+    .asmr-playlist-label {
+      font-size: 0.6rem; letter-spacing: 3px;
+      color: var(--lav-dim); text-transform: uppercase;
+      margin-bottom: 4px; font-weight: 500;
     }
 
-    .msg.user { flex-direction: row-reverse; }
-
-    .msg-avatar {
-      width: 30px; height: 30px; border-radius: 50%;
-      background: linear-gradient(135deg, rgba(184,159,216,0.25), rgba(201,132,154,0.15));
-      border: 1px solid rgba(184,159,216,0.2);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.85rem; flex-shrink: 0; margin-top: 2px;
+    .asmr-playlist-item {
+      display: flex; gap: 12px; align-items: center;
+      background: rgba(16,16,30,0.6);
+      border: 1px solid var(--border);
+      border-radius: 14px; padding: 12px 14px;
+      cursor: pointer; transition: all 0.2s;
     }
-    .msg.user .msg-avatar {
-      background: linear-gradient(135deg, rgba(122,191,160,0.2), rgba(184,159,216,0.15));
-      border-color: rgba(122,191,160,0.25);
+    .asmr-playlist-item:hover { border-color: rgba(184,159,216,0.3); }
+    .asmr-playlist-item.active {
+      border-color: rgba(184,159,216,0.5);
+      background: rgba(184,159,216,0.08);
     }
-
-    .msg-bubble {
-      max-width: 78%;
-      padding: 12px 16px;
-      border-radius: 18px;
-      font-size: 0.88rem;
-      line-height: 1.65;
+    .asmr-item-thumb {
+      width: 60px; height: 44px;
+      border-radius: 8px; overflow: hidden;
+      background: var(--card); flex-shrink: 0;
       position: relative;
     }
-
-    .msg.ai .msg-bubble {
-      background: rgba(16,16,30,0.9);
-      border: 1px solid rgba(184,159,216,0.15);
-      border-bottom-left-radius: 6px;
-      color: var(--text);
+    .asmr-item-thumb iframe {
+      width: 100%; height: 100%;
+      border: none; pointer-events: none;
     }
-
-    .msg.user .msg-bubble {
-      background: linear-gradient(135deg, rgba(184,159,216,0.18), rgba(201,132,154,0.12));
+    .asmr-item-info { flex: 1; }
+    .asmr-item-name {
+      font-size: 0.82rem; color: var(--white);
+      font-weight: 500; margin-bottom: 2px;
+      line-height: 1.3;
+    }
+    .asmr-item-desc {
+      font-size: 0.68rem; color: var(--dim);
+      line-height: 1.4;
+    }
+    .asmr-item-play {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: rgba(184,159,216,0.15);
       border: 1px solid rgba(184,159,216,0.25);
-      border-bottom-right-radius: 6px;
-      color: var(--white);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem; flex-shrink: 0;
+      color: var(--lavender);
+    }
+    .asmr-playlist-item.active .asmr-item-play {
+      background: var(--lavender);
+      color: var(--bg);
     }
 
-    .msg-time {
-      font-size: 0.58rem; color: var(--dim); margin-top: 5px;
-      letter-spacing: 0.5px; text-align: right;
-    }
-    .msg.ai .msg-time { text-align: left; }
-
-    /* Typing indicator */
-    .typing-indicator {
-      display: flex; align-items: center; gap: 8px;
-    }
-    .typing-dots {
-      display: flex; gap: 4px; padding: 14px 16px;
-      background: rgba(16,16,30,0.9);
-      border: 1px solid rgba(184,159,216,0.15);
-      border-radius: 18px; border-bottom-left-radius: 6px;
-    }
-    .typing-dot {
-      width: 6px; height: 6px; border-radius: 50%;
-      background: var(--lavender); opacity: 0.4;
-      animation: typingBounce 1.2s ease-in-out infinite;
-    }
-    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
-    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
-    @keyframes typingBounce {
-      0%,60%,100% { transform: translateY(0); opacity: 0.4; }
-      30%          { transform: translateY(-6px); opacity: 1; }
-    }
-
-    /* Quick replies */
-    .quick-replies {
-      display: flex; flex-wrap: wrap; gap: 7px;
-      padding: 4px 0 8px;
-    }
-    .quick-reply {
-      background: rgba(184,159,216,0.07);
-      border: 1px solid rgba(184,159,216,0.2);
-      border-radius: 20px; padding: 7px 14px;
-      font-size: 0.78rem; color: var(--lavender);
-      cursor: pointer; transition: all 0.2s;
-      font-family: 'DM Sans', sans-serif;
-      white-space: nowrap;
-    }
-    .quick-reply:hover { background: rgba(184,159,216,0.14); border-color: rgba(184,159,216,0.4); }
-    .quick-reply:active { transform: scale(0.97); }
-
-    /* Crisis chip */
-    .crisis-chip {
-      display: inline-flex; align-items: center; gap: 6px;
-      background: rgba(201,132,154,0.12); border: 1px solid rgba(201,132,154,0.3);
-      border-radius: 20px; padding: 8px 14px; margin-top: 8px;
-      font-size: 0.78rem; color: var(--rose); cursor: pointer;
-      transition: all 0.2s; font-family: 'DM Sans', sans-serif;
-    }
-    .crisis-chip:hover { background: rgba(201,132,154,0.2); }
-
-    /* Chat input */
-    .chat-input-area {
+    /* ASMR Player overlay */
+    .asmr-player-wrap {
       flex-shrink: 0;
-      padding: 12px 16px 14px;
+      background: #000;
+      position: relative;
+      aspect-ratio: 16/9;
+      max-height: 38vh;
+    }
+    .asmr-player-wrap iframe {
+      width: 100%; height: 100%;
+      border: none; display: block;
+    }
+    .asmr-play-overlay {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+    }
+    .asmr-play-overlay.playing { display: none; }
+    .asmr-play-btn-big {
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      background: rgba(184,159,216,0.9);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.6rem; color: var(--bg);
+      box-shadow: 0 4px 24px rgba(184,159,216,0.5);
+      transition: transform 0.2s;
+    }
+    .asmr-play-btn-big:hover { transform: scale(1.1); }
+
+    .asmr-controls {
+      flex-shrink: 0;
+      padding: 10px 16px 14px;
       background: rgba(8,8,15,0.95);
       border-top: 1px solid var(--border);
       backdrop-filter: blur(20px);
+      display: flex; align-items: center; gap: 10px;
     }
-
-    .chat-input-row {
-      display: flex; gap: 10px; align-items: flex-end;
-    }
-
-    .chat-input {
-      flex: 1;
-      background: rgba(16,16,30,0.8);
-      border: 1px solid var(--border);
-      border-radius: 22px;
-      padding: 12px 18px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.9rem;
-      color: var(--white);
-      outline: none;
-      resize: none;
-      min-height: 46px;
-      max-height: 120px;
-      line-height: 1.5;
-      transition: border-color 0.2s;
-      overflow-y: auto;
-      scrollbar-width: none;
-    }
-    .chat-input::-webkit-scrollbar { display: none; }
-    .chat-input:focus { border-color: rgba(184,159,216,0.4); }
-    .chat-input::placeholder { color: var(--dim); }
-
-    .chat-send-btn {
-      width: 46px; height: 46px; border-radius: 50%;
-      background: linear-gradient(135deg, rgba(184,159,216,0.3), rgba(201,132,154,0.2));
-      border: 1px solid rgba(184,159,216,0.35);
-      color: var(--lavender); font-size: 1.1rem;
+    .asmr-ctrl-btn {
+      background: rgba(184,159,216,0.08);
+      border: 1px solid rgba(184,159,216,0.2);
+      border-radius: 10px;
+      padding: 7px 12px;
+      font-size: 0.75rem; color: var(--lavender);
       cursor: pointer; transition: all 0.2s;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
+      font-family: 'DM Sans', sans-serif;
     }
-    .chat-send-btn:hover { background: rgba(184,159,216,0.4); transform: scale(1.05); }
-    .chat-send-btn:active { transform: scale(0.97); }
-    .chat-send-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+    .asmr-ctrl-btn:hover { background: rgba(184,159,216,0.16); }
+    .asmr-ctrl-btn.active {
+      background: rgba(184,159,216,0.18);
+      border-color: rgba(184,159,216,0.45);
+    }
+    .asmr-ctrl-spacer { flex: 1; }
+    .asmr-timer {
+      font-size: 0.7rem; color: var(--dim);
+      letter-spacing: 1px;
+    }
+    .asmr-now-playing {
+      font-size: 0.68rem; color: var(--dim);
+      overflow: hidden; text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 120px;
+    }
+    .asmr-now-playing span { color: var(--lavender); }
 
     /* ── PAYWALL MODAL ── */
     .modal-overlay {
@@ -843,38 +744,33 @@
   <div class="powered" style="margin-top:20px">COPE · <span>TOASTID TECH</span></div>
 </div>
 
-<!-- ══ COPE AI CHAT SCREEN ══ -->
-<div class="screen" id="screen-chat">
+<!-- ══ ASMR SCREEN ══ -->
+<div class="screen" id="screen-asmr">
 
-  <div class="chat-header">
-    <div class="chat-header-inner">
-      <div class="chat-avatar">🌙</div>
-      <div class="chat-header-text">
-        <div class="chat-name">Cope AI</div>
-        <div class="chat-status">Here for you</div>
-      </div>
-      <button class="chat-clear-btn" onclick="clearChat()">Clear</button>
-    </div>
-    <div class="chat-disclaimer">
-      <strong>Not a crisis line.</strong> If you're in danger, please call or text <strong>988</strong> immediately.
+  <div class="asmr-header">
+    <div class="asmr-title-row">
+      <div class="page-title">ASMR</div>
+      <div class="asmr-sub">Relaxing sounds to help you unwind</div>
     </div>
   </div>
 
-  <div class="chat-messages" id="chatMessages"></div>
+  <div class="asmr-playlist" id="asmrPlaylist"></div>
 
-  <div class="chat-input-area">
-    <div class="quick-replies" id="quickReplies"></div>
-    <div class="chat-input-row">
-      <textarea
-        class="chat-input"
-        id="chatInput"
-        placeholder="Talk to Cope AI..."
-        rows="1"
-        onkeydown="handleChatKey(event)"
-        oninput="autoResizeInput(this)"
-      ></textarea>
-      <button class="chat-send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
+  <div class="asmr-player-wrap" id="asmrPlayerWrap">
+    <div class="asmr-play-overlay" id="asmrPlayOverlay">
+      <div class="asmr-play-btn-big">▶</div>
     </div>
+    <iframe id="asmrPlayerIframe" src="" allow="autoplay"></iframe>
+  </div>
+
+  <div class="asmr-controls">
+    <button class="asmr-ctrl-btn" id="asmrPrevBtn">⏮</button>
+    <button class="asmr-ctrl-btn" id="asmrPlayBtn" onclick="asmrTogglePlay()">▶</button>
+    <button class="asmr-ctrl-btn" id="asmrNextBtn">⏭</button>
+    <div class="asmr-ctrl-spacer"></div>
+    <div class="asmr-now-playing" id="asmrNowPlaying">Select a video</div>
+    <div class="asmr-timer" id="asmrTimer"></div>
+    <button class="asmr-ctrl-btn" id="asmrAutoBtn" onclick="asmrToggleAuto()">⟳ Auto</button>
   </div>
 
 </div>
@@ -890,8 +786,8 @@
   <button class="nav-btn" onclick="hasAccess() ? goTo('journal') : openPaywall()">
     <span class="nav-icon">📓</span><span class="nav-label">Journal</span>
   </button>
-  <button class="nav-btn" onclick="goTo('chat')">
-    <span class="nav-icon">💬</span><span class="nav-label">Cope AI</span>
+  <button class="nav-btn" onclick="goTo('asmr')">
+    <span class="nav-icon">🎧</span><span class="nav-label">ASMR</span>
   </button>
   <button class="nav-btn" onclick="goTo('crisis')">
     <span class="nav-icon">💜</span><span class="nav-label">Help</span>
@@ -903,9 +799,9 @@
   <div class="modal-sheet">
     <div class="sheet-handle"></div>
     <div class="sheet-icon">🌙</div>
-    <div class="sheet-title">Unlock Full Healing</div>
-    <div class="sheet-sub">Get unlimited access to every tool in Cope — breathing, journal, affirmations, sleep tracking, and more.</div>
-    <div class="sheet-features">
+    <div class="sheet-title" id="sheetTitle">Unlock Full Healing</div>
+    <div class="sheet-sub" id="sheetSub">Get unlimited access to every tool in Cope — breathing, journal, affirmations, sleep tracking, and more.</div>
+    <div class="sheet-features" id="sheetFeatures">
       <div class="sheet-feat"><span>✦</span> Cope AI — your 24/7 wellness companion</div>
       <div class="sheet-feat"><span>✦</span> Daily affirmations library</div>
       <div class="sheet-feat"><span>✦</span> Sleep tracking & history</div>
@@ -913,7 +809,7 @@
       <div class="sheet-feat"><span>✦</span> All breathing patterns</div>
     </div>
     <!-- Plan Selector -->
-    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px">
+    <div id="planSelector" style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px">
 
       <div id="plan-standalone" onclick="selectCopePlan('standalone')" style="
         background:rgba(184,159,216,0.06);border:2px solid rgba(184,159,216,0.2);
@@ -933,14 +829,14 @@
           white-space:nowrap;letter-spacing:0.08em;font-family:'DM Sans',sans-serif">BEST VALUE</div>
         <div style="font-family:'Cormorant Garamond',serif;font-size:1.8rem;color:#c8a96e;line-height:1">$19.99</div>
         <div style="font-size:0.7rem;color:var(--dim);letter-spacing:2px;margin-top:4px">/ MONTH · ANY 2 TOASTID APPS</div>
-        <div style="font-size:0.72rem;color:rgba(200,169,110,0.6);margin-top:6px">🍞 Choose 2 — includes Cope, Micro Habits & 28-Day Walking Tai Chi</div>
+        <div style="font-size:0.72rem;color:rgba(200,169,110,0.6);margin-top:6px">🍞 Includes Cope, Micro Habits & 28-Day Walking Tai Chi</div>
       </div>
 
     </div>
     <button class="sheet-buy-btn" id="sheetBuyBtn" onclick="goToSquare()">✦ Continue →</button>
-    <div class="sheet-promo-row">
-      <input class="sheet-promo-input" id="promoInput" type="text" placeholder="Have a promo code?" maxlength="20">
-      <button class="sheet-promo-btn" onclick="applyPromo()">Apply</button>
+    <div class="sheet-promo-row" id="confirmRow">
+      <input class="sheet-promo-input" id="promoInput" type="text" placeholder="Paste Square confirmation code here..." maxlength="30">
+      <button class="sheet-promo-btn" id="codeApplyBtn" onclick="applyPromo()">Apply</button>
     </div>
     <div class="promo-msg" id="promoMsg"></div>
     <span class="sheet-close" onclick="closePaywall()">Maybe later</span>
@@ -989,12 +885,12 @@ function goTo(id) {
   document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
   document.querySelectorAll('.nav-btn').forEach(function(b) { b.classList.remove('active'); });
   document.getElementById('screen-' + id).classList.add('active');
-  var navMap = { home:0, breathing:1, journal:2, chat:3, crisis:4 };
+  var navMap = { home:0, breathing:1, journal:2, asmr:3, crisis:4 };
   var navBtns = document.querySelectorAll('.nav-btn');
   if (navMap[id] !== undefined) navBtns[navMap[id]].classList.add('active');
   currentScreen = id;
   window.scrollTo(0,0);
-  if (id === 'chat') { initChat(); }
+  if (id === 'asmr') { initASMR(); }
 }
 
 // ── Greeting ──
@@ -1211,6 +1107,14 @@ function closePaywall() {
   document.getElementById('promoMsg').innerHTML = '';
   document.getElementById('promoInput').value = '';
   document.getElementById('sheetBuyBtn').textContent = '✦ Continue →';
+  document.getElementById('sheetBuyBtn').onclick = goToSquare;
+  // Reset sheet to initial state
+  var planSel = document.getElementById('planSelector');
+  if (planSel) planSel.style.display = 'flex';
+  var sheetSub = document.getElementById('sheetSub');
+  if (sheetSub) sheetSub.textContent = 'Get unlimited access to every tool in Cope — breathing, journal, affirmations, sleep tracking, and more.';
+  var sheetTitle = document.getElementById('sheetTitle');
+  if (sheetTitle) sheetTitle.textContent = 'Unlock Full Healing';
 }
 
 function handleOverlayClick(e) { if (e.target === document.getElementById('paywallModal')) closePaywall(); }
@@ -1218,13 +1122,75 @@ function handleOverlayClick(e) { if (e.target === document.getElementById('paywa
 function goToSquare() {
   var url = selectedCopePlan === 'bundle' ? SQUARE_BUNDLE : SQUARE_STANDALONE;
   window.open(url, '_blank');
-  setTimeout(function() {
-    document.getElementById('paywallModal').querySelector('.sheet-sub').textContent = 'Already paid? Enter your unlock code below.';
-  }, 2000);
+  // Switch modal to confirmation-entry mode
+  var sheet = document.getElementById('paywallModal').querySelector('.modal-sheet');
+  var buyBtn = document.getElementById('sheetBuyBtn');
+  var promoRow = document.getElementById('confirmRow');
+  var promoMsg = document.getElementById('promoMsg');
+  var planSelector = document.getElementById('planSelector');
+  var sheetSub = sheet.querySelector('.sheet-sub');
+  
+  // Hide plan selector, show confirmation input
+  if (planSelector) planSelector.style.display = 'none';
+  if (buyBtn) {
+    buyBtn.textContent = '✓ Verify Payment';
+    buyBtn.onclick = validateConfirmationCode;
+  }
+  if (sheetSub) {
+    sheetSub.textContent = 'After completing your payment, paste your Square confirmation code below to unlock Cope.';
+  }
+  // Show the confirmation row if hidden
+  if (promoRow) promoRow.style.display = 'flex';
+  if (promoMsg) promoMsg.innerHTML = '';
 }
+
+function validateConfirmationCode() {
+  var code = document.getElementById('promoInput').value.trim().toUpperCase();
+  var msg = document.getElementById('promoMsg');
+  if (!code) {
+    msg.innerHTML = '<span style="color:var(--amber)">Please paste your Square confirmation code first.</span>';
+    return;
+  }
+  msg.innerHTML = '<span style="color:var(--lavender)">Verifying your payment... 💜</span>';
+  
+  // Call the validation endpoint (your Cloudflare Worker or a dedicated endpoint)
+  // Replace the URL below with your actual validation endpoint
+  fetch('https://muddy-violet-2a0d.toastidtechllc.workers.dev/validate-order', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      confirmationCode: code,
+      app: 'cope',
+      plan: selectedCopePlan
+    })
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    if (data.success || data.unlocked) {
+      grantAccess();
+      msg.innerHTML = '<span style="color:var(--green)">✓ Payment verified! Welcome to Cope. 💜</span>';
+      setTimeout(function() { closePaywall(); renderHome(); }, 1800);
+    } else {
+      msg.innerHTML = '<span style="color:var(--red)">✗ That confirmation code wasn\'t found. Please check your Square email and try again.</span>';
+    }
+  })
+  .catch(function() {
+    // Fallback: accept known test codes for demo / if validation endpoint is unavailable
+    // TST2026 = permanent owner code (works on all apps/plans)
+    var TEST_CODES = ['DEMO2026', 'TST2026', 'TESTCOPE'];
+    if (TEST_CODES.indexOf(code) !== -1) {
+      grantAccess();
+      msg.innerHTML = '<span style="color:var(--green)">✓ Demo access granted! Welcome to Cope. 💜</span>';
+      setTimeout(function() { closePaywall(); renderHome(); }, 1800);
+    } else {
+      msg.innerHTML = '<span style="color:var(--red)">✗ Could not verify right now. Please try again or contact support@toastidtech.com</span>';
+    }
+  });
+}
+
 function applyPromo() {
   var code = document.getElementById('promoInput').value.trim().toUpperCase();
-  var msg  = document.getElementById('promoMsg');
+  var msg = document.getElementById('promoMsg');
   if (code === PROMO_CODE) {
     grantAccess();
     msg.innerHTML = '<span style="color:var(--green)">✓ Welcome to Cope. You\'re unlocked. 💜</span>';
@@ -1236,362 +1202,118 @@ function applyPromo() {
   }
 }
 
-// ══════════════════════════════════════
-// COPE AI CHAT
-// ══════════════════════════════════════
-
-var chatHistory = [];
-var chatInitialized = false;
-var isTyping = false;
-
-var SYSTEM_PROMPT = `You are Cope AI, a warm, compassionate mental health and wellness companion built into the Cope app by Toastid Tech. Your sole purpose is to support users with mental health, emotional wellness, and related medical topics only.
-
-SCOPE — STRICTLY ENFORCED:
-You ONLY respond to topics related to:
-- Mental health and emotional wellness (anxiety, depression, grief, stress, burnout, loneliness, anger, trauma, PTSD, OCD, bipolar, ADHD, eating disorders, phobias)
-- Emotional regulation and coping strategies
-- Sleep health as it relates to mental wellness
-- Breathing and grounding techniques
-- Journaling and self-reflection
-- Affirmations and self-compassion
-- Medication questions (general psychoeducation only — never dosing advice)
-- Therapy and professional mental health resources
-- Crisis support and safety
-
-If the user asks about ANYTHING outside this scope (sports, cooking, technology, general knowledge, coding, current events, relationships unrelated to mental health, etc.), respond warmly but firmly:
-"I'm Cope AI — I'm here specifically for your mental health and emotional wellness. I'm not able to help with that topic, but I'm always here if you want to talk about how you're feeling or work through something emotionally. 💜"
-
-PERSONALITY:
-- Warm, calm, and non-judgmental — like a trusted friend who genuinely cares
-- Speak in a human tone. Never clinical or robotic. Never preachy.
-- Use soft, grounding language. Short paragraphs. Never overwhelming.
-- Gentle emojis sparingly (💜 🌿 🌬 ✨) — one per message maximum.
-- Never say "just", "simply", "at least", or "you should". These minimize pain.
-
-RESPONSE QUALITY:
-- Always acknowledge what the user shared before offering tools or advice
-- Be specific — don't give generic platitudes. Reflect what they actually said.
-- Offer ONE clear tool or suggestion at a time, not a list of five things
-- Keep responses to 3-5 sentences unless guiding a technique step by step
-- End every response with a warm, open question or gentle invitation
-
-GUIDED TECHNIQUES YOU CAN WALK THROUGH STEP BY STEP:
-- Box breathing (4s inhale, 4s hold, 4s exhale, 4s hold)
-- 4-7-8 breathing (4s inhale, 7s hold, 8s exhale)
-- 5-4-3-2-1 grounding (see, feel, hear, smell, taste)
-- Body scan relaxation
-- Cognitive reframing (gently challenging unhelpful thought patterns)
-- Progressive muscle relaxation
-- Journaling prompts tailored to the user's mood
-
-CRISIS AWARENESS — NON-NEGOTIABLE:
-If the user expresses ANY of the following, ALWAYS respond with warmth AND crisis resources:
-- Suicidal thoughts or ideation ("I want to die", "I can't go on", "end it all")
-- Self-harm urges or behaviors
-- Feeling like a burden or that others would be better off without them
-- Hopelessness + statements about not wanting to exist
-- Panic that feels physically unmanageable
-
-Crisis response format:
-1. Lead with genuine human warmth — acknowledge their pain first
-2. Mention 988 (call or text, free, 24/7, confidential) and Crisis Text Line (text HELLO to 741741)
-3. Offer one immediate grounding step
-4. Stay present — do not end the conversation
-
-PROFESSIONAL REFERRAL:
-If someone describes symptoms that sound like a diagnosable condition, medication questions, or anything requiring clinical judgment, always say something like: "What you're describing sounds really real and worth talking through with a professional who can give you the full support you deserve. A therapist or your doctor would be a great next step alongside what we do here."
-
-NEVER:
-- Diagnose conditions
-- Recommend specific medications or dosages
-- Replace professional mental health care
-- Dismiss, minimize, or redirect pain without first acknowledging it`;
-
-
-var INITIAL_QUICK_REPLIES = [
-  "I've been feeling really anxious lately",
-  "I can't seem to shake this sadness",
-  "I'm overwhelmed and don't know where to start",
-  "Can you walk me through a breathing exercise?",
-  "I need something to help me feel grounded"
+// ── ASMR ──
+var ASMR_VIDEOS = [
+  { id: '2ater-FjZ', name: 'Rain on Tent', desc: 'Steady rain for deep sleep' },
+  { id: 'uXvE6M6RObs', name: 'Thunderstorm', desc: 'Thunder & rain for relaxation' },
+  { id: 'mgmCoT3T3CY', name: 'Fireplace Crackle', desc: 'Cozy fire sounds at night' },
+  { id: 'iqVDb1j6Dig', name: 'Ocean Waves', desc: 'Gentle waves on a quiet shore' },
+  { id: 'm5_jdrTAocY', name: 'Forest Rain', desc: 'Rain through tree canopy' },
 ];
+var asmrCurrent = 0;
+var asmrPlaying = false;
+var asmrAutoTimer = null;
+var asmrAutoMode = false;
+var asmrTimerInterval = null;
 
-function initChat() {
-  if (chatInitialized) return;
-  chatInitialized = true;
+function initASMR() {
+  var container = document.getElementById('asmrPlaylist');
+  container.innerHTML = '<div class="asmr-playlist-label">Sound Library · Tap to play</div>' +
+    ASMR_VIDEOS.map(function(v, i) {
+      return '<div class="asmr-playlist-item' + (i === asmrCurrent ? ' active' : '') + '" onclick="asmrPlay(' + i + ')">' +
+        '<div class="asmr-item-thumb"><img src="https://img.youtube.com/vi/' + v.id + '/mqdefault.jpg" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:8px;opacity:0.7"></div>' +
+        '<div class="asmr-item-info"><div class="asmr-item-name">' + v.name + '</div><div class="asmr-item-desc">' + v.desc + '</div></div>' +
+        '<div class="asmr-item-play">' + (i === asmrCurrent && asmrPlaying ? '⏸' : '▶') + '</div>' +
+      '</div>';
+    }).join('');
 
-  try {
-    var saved = localStorage.getItem(CHAT_KEY);
-    if (saved) chatHistory = JSON.parse(saved);
-  } catch(e) { chatHistory = []; }
+  document.getElementById('asmrPrevBtn').onclick = asmrPrev;
+  document.getElementById('asmrNextBtn').onclick = asmrNext;
+  document.getElementById('asmrPlayOverlay').onclick = function() { asmrTogglePlay(); };
+  asmrLoad(asmrCurrent);
+  updateASMRNowPlaying();
+}
 
-  var container = document.getElementById('chatMessages');
+function asmrLoad(idx) {
+  asmrCurrent = idx;
+  var v = ASMR_VIDEOS[idx];
+  document.getElementById('asmrPlayerIframe').src = 'https://www.youtube.com/embed/' + v.id + '?autoplay=1&mute=0&controls=1&showinfo=0&rel=0&modestbranding=1';
+  document.getElementById('asmrPlayOverlay').classList.remove('playing');
+  asmrPlaying = false;
+  updateASMRNowPlaying();
+  renderASMRPlaylist();
+  if (asmrAutoMode) {
+    clearTimeout(asmrAutoTimer);
+    asmrAutoTimer = setTimeout(asmrNext, 60000);
+  }
+}
 
-  if (chatHistory.length === 0) {
-    renderMessage('ai', "Hey, I'm Cope AI. 💜 I'm here to support your mental health and emotional wellness.\n\nThis is a safe space. Share as much or as little as you'd like.\n\nWhat's on your heart right now?", true);
-    showQuickReplies(INITIAL_QUICK_REPLIES);
+function asmrPlay(idx) {
+  asmrLoad(idx);
+  asmrPlaying = true;
+  document.getElementById('asmrPlayOverlay').classList.add('playing');
+  document.getElementById('asmrPlayerIframe').src = 'https://www.youtube.com/embed/' + ASMR_VIDEOS[idx].id + '?autoplay=1&mute=0&controls=1&showinfo=0&rel=0&modestbranding=1';
+}
+
+function asmrTogglePlay() {
+  if (!asmrPlaying) {
+    asmrPlaying = true;
+    document.getElementById('asmrPlayOverlay').classList.add('playing');
+    var iframe = document.getElementById('asmrPlayerIframe');
+    var v = ASMR_VIDEOS[asmrCurrent];
+    iframe.src = 'https://www.youtube.com/embed/' + v.id + '?autoplay=1&mute=0&controls=1&showinfo=0&rel=0&modestbranding=1';
+    document.getElementById('asmrPlayBtn').textContent = '⏸';
   } else {
-    container.innerHTML = '';
-    chatHistory.forEach(function(msg) {
-      renderMessage(msg.role === 'user' ? 'user' : 'ai', msg.content, false);
-    });
-    scrollToBottom();
+    asmrPlaying = false;
+    document.getElementById('asmrPlayOverlay').classList.remove('playing');
+    document.getElementById('asmrPlayerIframe').src = '';
+    var iframe2 = document.getElementById('asmrPlayerIframe');
+    var v2 = ASMR_VIDEOS[asmrCurrent];
+    iframe2.src = 'https://www.youtube.com/embed/' + v2.id + '?autoplay=0&mute=1&controls=1&showinfo=0&rel=0&modestbranding=1';
+    document.getElementById('asmrPlayBtn').textContent = '▶';
+  }
+  renderASMRPlaylist();
+}
+
+function asmrPrev() {
+  asmrPlay((asmrCurrent - 1 + ASMR_VIDEOS.length) % ASMR_VIDEOS.length);
+}
+
+function asmrNext() {
+  asmrPlay((asmrCurrent + 1) % ASMR_VIDEOS.length);
+}
+
+function asmrToggleAuto() {
+  asmrAutoMode = !asmrAutoMode;
+  var btn = document.getElementById('asmrAutoBtn');
+  if (asmrAutoMode) {
+    btn.classList.add('active');
+    btn.textContent = '⟳ Auto On';
+    asmrAutoTimer = setTimeout(asmrNext, 60000);
+  } else {
+    btn.classList.remove('active');
+    btn.textContent = '⟳ Auto';
+    clearTimeout(asmrAutoTimer);
   }
 }
 
-function addAIMessage(text, animate) {
-  chatHistory.push({ role: 'assistant', content: text });
-  saveChatHistory();
-  renderMessage('ai', text, animate !== false);
-  scrollToBottom();
+function updateASMRNowPlaying() {
+  var v = ASMR_VIDEOS[asmrCurrent];
+  document.getElementById('asmrNowPlaying').innerHTML = 'Now: <span>' + v.name + '</span>';
 }
 
-function renderMessage(role, text, animate) {
-  var container = document.getElementById('chatMessages');
-  var now = new Date();
-  var timeStr = now.getHours() + ':' + String(now.getMinutes()).padStart(2,'0');
-
-  var msgEl = document.createElement('div');
-  msgEl.className = 'msg ' + role;
-  if (!animate) msgEl.style.animation = 'none';
-
-  // Check for crisis keywords to add chip
-  var crisisKeywords = ['988','crisis','suicide','self-harm','hurt myself','end it','not worth living','want to die'];
-  var hasCrisis = crisisKeywords.some(function(k) { return text.toLowerCase().includes(k); });
-
-  var avatarEmoji = role === 'ai' ? '🌙' : '🫂';
-  var formattedText = text.replace(/\n/g, '<br>');
-
-  msgEl.innerHTML =
-    '<div class="msg-avatar">' + avatarEmoji + '</div>' +
-    '<div>' +
-      '<div class="msg-bubble">' + formattedText +
-        (hasCrisis && role === 'ai' ? '<br><a href="tel:988" class="crisis-chip">📞 Call or text 988 now</a>' : '') +
-      '</div>' +
-      '<div class="msg-time">' + timeStr + '</div>' +
-    '</div>';
-
-  container.appendChild(msgEl);
-}
-
-function showQuickReplies(replies) {
-  var container = document.getElementById('quickReplies');
-  container.innerHTML = '';
-  replies.forEach(function(r) {
-    var btn = document.createElement('button');
-    btn.className = 'quick-reply';
-    btn.textContent = r;
-    btn.onclick = function() {
-      container.innerHTML = '';
-      sendMessageText(r);
-    };
-    container.appendChild(btn);
-  });
-}
-
-function clearChat() {
-  chatHistory = [];
-  saveChatHistory();
-  chatInitialized = false;
-  document.getElementById('chatMessages').innerHTML = '';
-  document.getElementById('quickReplies').innerHTML = '';
-  initChat();
-}
-
-function saveChatHistory() {
-  try {
-    // Keep last 40 messages to avoid localStorage overflow
-    var toSave = chatHistory.slice(-40);
-    localStorage.setItem(CHAT_KEY, JSON.stringify(toSave));
-  } catch(e) {}
-}
-
-function scrollToBottom() {
-  setTimeout(function() {
-    var container = document.getElementById('chatMessages');
-    container.scrollTop = container.scrollHeight;
-  }, 50);
-}
-
-function autoResizeInput(el) {
-  el.style.height = 'auto';
-  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
-}
-
-function handleChatKey(e) {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault();
-    sendMessage();
-  }
-}
-
-function sendMessage() {
-  var input = document.getElementById('chatInput');
-  var text = input.value.trim();
-  if (!text || isTyping) return;
-  input.value = '';
-  input.style.height = 'auto';
-  sendMessageText(text);
-}
-
-function sendMessageText(text) {
-  if (!text || isTyping) return;
-
-  // Clear quick replies
-  document.getElementById('quickReplies').innerHTML = '';
-
-  // Add user message
-  chatHistory.push({ role: 'user', content: text });
-  saveChatHistory();
-  renderMessage('user', text, true);
-  scrollToBottom();
-
-  // Show typing indicator
-  showTyping();
-
-  // Build messages for API
-  var messages = chatHistory.slice(-20).filter(function(m, i, arr) {
-  // Drop leading assistant messages
-  var firstUserIdx = arr.findIndex(function(x) { return x.role === 'user'; });
-  return arr.indexOf(m) >= firstUserIdx;
-});
-
-  // Call Claude API
-  fetch('https://muddy-violet-2a0d.toastidtechllc.workers.dev/', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-API-Key': 'cope_pwa_sk_7f3b9a2e1c8d4f6a0e5b2c9d3f8a1b4c7e2d6f9a8e1b3c5d7f0a9e2b4c6d8f1a'
-    },
-    body: JSON.stringify({
-      model: 'claude-3-5-haiku-20241022',
-      max_tokens: 1000,
-      system: SYSTEM_PROMPT, 
-      messages: messages
-    })
-  })
-  .then(function(res) { return res.json(); })
-  .then(function(data) {
-    hideTyping();
-    var reply = '';
-    if (data.content && data.content[0] && data.content[0].text) {
-      reply = data.content[0].text;
+function renderASMRPlaylist() {
+  var items = document.querySelectorAll('.asmr-playlist-item');
+  items.forEach(function(item, i) {
+    if (i === asmrCurrent) {
+      item.classList.add('active');
+      item.querySelector('.asmr-item-play').textContent = asmrPlaying ? '⏸' : '▶';
     } else {
-      reply = "I'm here with you. 💜 It seems I had a little trouble connecting just now — but I'm not going anywhere. Can you try again?";
+      item.classList.remove('active');
+      item.querySelector('.asmr-item-play').textContent = '▶';
     }
-    addAIMessage(reply, true);
-
-    // Generate contextual quick replies based on response
-    var suggestions = getContextualReplies(text, reply);
-    if (suggestions.length > 0) showQuickReplies(suggestions);
-  })
-  .catch(function() {
-    hideTyping();
-    addAIMessage("I'm still here with you. 💜 There was a small connection issue — please try sending your message again.", true);
   });
 }
-
-function showTyping() {
-  isTyping = true;
-  document.getElementById('sendBtn').disabled = true;
-  var container = document.getElementById('chatMessages');
-  var typingEl = document.createElement('div');
-  typingEl.className = 'msg ai';
-  typingEl.id = 'typingIndicator';
-  typingEl.innerHTML =
-    '<div class="msg-avatar">🌙</div>' +
-    '<div class="typing-dots"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>';
-  container.appendChild(typingEl);
-  scrollToBottom();
-}
-
-function hideTyping() {
-  isTyping = false;
-  document.getElementById('sendBtn').disabled = false;
-  var typingEl = document.getElementById('typingIndicator');
-  if (typingEl) typingEl.remove();
-}
-
-function getContextualReplies(userMsg, aiReply) {
-  var lower = userMsg.toLowerCase() + ' ' + aiReply.toLowerCase();
-
-  if (lower.includes('panic attack') || (lower.includes('panic') && lower.includes('right now'))) {
-    return [
-      "I think I'm having a panic attack right now",
-      "Walk me through box breathing step by step",
-      "Help me ground myself with 5-4-3-2-1"
-    ];
-  }
-  if (lower.includes('breath') || lower.includes('anxious') || lower.includes('anxiety')) {
-    return [
-      "Guide me through box breathing",
-      "Can we try the 4-7-8 method?",
-      "I'm still feeling tense — what else can I try?"
-    ];
-  }
-  if (lower.includes('depress') || lower.includes('hopeless') || lower.includes('empty') || lower.includes('numb')) {
-    return [
-      "I've been feeling this way for a while now",
-      "Can you give me a gentle journaling prompt?",
-      "I'm not sure I have the energy for anything right now"
-    ];
-  }
-  if (lower.includes('journal') || lower.includes('write') || lower.includes('reflect') || lower.includes('prompt')) {
-    return [
-      "Give me a prompt for when I feel emotionally exhausted",
-      "I want to journal about something that's been bothering me",
-      "Help me figure out what I'm actually feeling"
-    ];
-  }
-  if (lower.includes('affirm') || lower.includes('self-worth') || lower.includes('worthless') || lower.includes('not enough')) {
-    return [
-      "Give me an affirmation for a really hard day",
-      "I struggle to believe kind things about myself",
-      "Can you help me practice self-compassion?"
-    ];
-  }
-  if (lower.includes('sleep') || lower.includes('insomnia') || lower.includes('tired') || lower.includes('awake')) {
-    return [
-      "My mind won't stop racing at night",
-      "Walk me through a wind-down breathing exercise",
-      "What can I do when anxiety keeps me awake?"
-    ];
-  }
-  if (lower.includes('grief') || lower.includes('loss') || lower.includes('lost') || lower.includes('death') || lower.includes('died')) {
-    return [
-      "I don't know how to process what I'm feeling",
-      "Is what I'm going through normal?",
-      "I need something to help me get through today"
-    ];
-  }
-  if (lower.includes('angry') || lower.includes('anger') || lower.includes('rage') || lower.includes('frustrated')) {
-    return [
-      "I can't calm down right now",
-      "Help me understand why I feel so angry",
-      "Give me a technique to release this without hurting anyone"
-    ];
-  }
-  if (lower.includes('stress') || lower.includes('overwhelm') || lower.includes('too much')) {
-    return [
-      "Everything feels like too much right now",
-      "Help me figure out where to start",
-      "Can we do a quick grounding exercise?"
-    ];
-  }
-  if (lower.includes('therapist') || lower.includes('therapy') || lower.includes('professional') || lower.includes('medication')) {
-    return [
-      "How do I know if I need professional help?",
-      "What should I look for in a therapist?",
-      "I'm nervous about reaching out for help"
-    ];
-  }
-  return [
-    "I want to keep talking about this",
-    "Can you help me understand what I'm feeling?",
-    "What's one small thing I can do right now?"
-  ];
-}
-
 
 // ── INIT ──
 setGreeting();
