@@ -410,10 +410,12 @@
       opacity: 1; pointer-events: auto;
     }
     .asmr-play-btn-big {
-      width: 56px; height: 56px; border-radius: 50%;
+      width: 56px; height: 56px; min-width: 56px; min-height: 56px;
+      box-sizing: border-box; flex: 0 0 56px;
+      border-radius: 50%; padding: 0; line-height: 1;
       background: rgba(8,8,15,0.7); border: 1px solid rgba(184,159,216,0.3);
       display: flex; align-items: center; justify-content: center;
-      color: var(--lavender); font-size: 1.2rem;
+      color: var(--lavender); font-size: 1rem;
       box-shadow: 0 0 30px rgba(184,159,216,0.2);
     }
 
@@ -1139,8 +1141,8 @@
 
   // ── ASMR ──
   var ASMR_VIDEOS = [
-    { id: 'ezJ14i-pT24', name: 'Rain on Tent', desc: 'Steady rain for deep sleep' },
-    { id: 'iJ6OwhUMjzo', name: 'Thunderstorm', desc: 'Thunder & rain for relaxation' },
+    { id: '7lumWMaIsbU', name: 'Rain on Tent', desc: 'Heavy rain and thunder on canvas' },
+    { id: 'TXOGHVMKuY4', name: 'Thunderstorm', desc: 'Rain and thunderstorm ambience' },
     { id: '6oSPEbPBGtg', name: 'Fireplace Crackle', desc: 'Cozy fire sounds at night' },
     { id: 'NOpB_b_UHkw', name: 'Ocean Waves', desc: 'Gentle waves on a quiet shore' },
     { id: 'Jf2wlMbV_Zw', name: 'Forest Rain', desc: 'Rain through tree canopy' },
@@ -1165,14 +1167,18 @@
     document.getElementById('asmrPrevBtn').onclick = asmrPrev;
     document.getElementById('asmrNextBtn').onclick = asmrNext;
     document.getElementById('asmrPlayOverlay').onclick = function() { asmrTogglePlay(); };
-    asmrLoad(asmrCurrent);
+    asmrLoad(asmrCurrent, false);
     updateASMRNowPlaying();
   }
 
-  function asmrLoad(idx) {
+  function asmrEmbedUrl(v, autoplay) {
+    return 'https://www.youtube.com/embed/' + v.id + '?controls=1&showinfo=0&rel=0&modestbranding=1' + (autoplay ? '&autoplay=1' : '');
+  }
+
+  function asmrLoad(idx, autoplay) {
     asmrCurrent = idx;
     var v = ASMR_VIDEOS[idx];
-    document.getElementById('asmrPlayerIframe').src = 'https://www.youtube.com/embed/' + v.id + '?autoplay=1&mute=0&controls=1&showinfo=0&rel=0&modestbranding=1';
+    document.getElementById('asmrPlayerIframe').src = asmrEmbedUrl(v, !!autoplay);
     document.getElementById('asmrPlayOverlay').classList.remove('playing');
     asmrPlaying = false;
     updateASMRNowPlaying();
@@ -1184,10 +1190,11 @@
   }
 
   function asmrPlay(idx) {
-    asmrLoad(idx);
+    asmrLoad(idx, true);
     asmrPlaying = true;
     document.getElementById('asmrPlayOverlay').classList.add('playing');
-    document.getElementById('asmrPlayerIframe').src = 'https://www.youtube.com/embed/' + ASMR_VIDEOS[idx].id + '?autoplay=1&mute=0&controls=1&showinfo=0&rel=0&modestbranding=1';
+    document.getElementById('asmrPlayBtn').textContent = '⏸';
+    renderASMRPlaylist();
   }
 
   function asmrTogglePlay() {
@@ -1196,15 +1203,14 @@
       document.getElementById('asmrPlayOverlay').classList.add('playing');
       var iframe = document.getElementById('asmrPlayerIframe');
       var v = ASMR_VIDEOS[asmrCurrent];
-      iframe.src = 'https://www.youtube.com/embed/' + v.id + '?autoplay=1&mute=0&controls=1&showinfo=0&rel=0&modestbranding=1';
+      iframe.src = asmrEmbedUrl(v, true);
       document.getElementById('asmrPlayBtn').textContent = '⏸';
     } else {
       asmrPlaying = false;
       document.getElementById('asmrPlayOverlay').classList.remove('playing');
-      document.getElementById('asmrPlayerIframe').src = '';
       var iframe2 = document.getElementById('asmrPlayerIframe');
       var v2 = ASMR_VIDEOS[asmrCurrent];
-      iframe2.src = 'https://www.youtube.com/embed/' + v2.id + '?autoplay=0&mute=1&controls=1&showinfo=0&rel=0&modestbranding=1';
+      iframe2.src = asmrEmbedUrl(v2, false);
       document.getElementById('asmrPlayBtn').textContent = '▶';
     }
     renderASMRPlaylist();
