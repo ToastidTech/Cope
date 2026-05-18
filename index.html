@@ -495,8 +495,11 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      min-height: 100dvh;
-      padding: calc(env(safe-area-inset-top) + 28px) 20px calc(env(safe-area-inset-bottom) + 32px);
+      width: 100vw;
+      height: 100dvh;
+      min-height: 100vh;
+      padding: max(env(safe-area-inset-top), 24px) max(env(safe-area-inset-right), 24px) max(env(safe-area-inset-bottom), 24px) max(env(safe-area-inset-left), 24px);
+      box-sizing: border-box;
       background: radial-gradient(circle at 50% 30%, rgba(184,159,216,0.14), rgba(8,8,15,0.96) 58%, rgba(8,8,15,1) 100%);
       overflow: hidden;
     }
@@ -528,26 +531,31 @@
     .cope-splash-content {
       position: relative;
       z-index: 2;
-      width: min(92vw, 360px);
+      width: 100%;
+      max-width: none;
+      min-height: 100%;
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: center;
       text-align: center;
-      gap: 14px;
+      gap: clamp(14px, 2.4vh, 22px);
+      padding: clamp(24px, 8vh, 72px) 0;
+      box-sizing: border-box;
     }
     .cope-splash-logo {
       display: block;
-      width: clamp(120px, 34vw, 180px);
+      width: clamp(144px, 42vw, 240px);
       height: auto;
       aspect-ratio: 1;
-      max-width: 180px;
-      max-height: 180px;
+      max-width: 240px;
+      max-height: 240px;
       object-fit: contain;
       filter: drop-shadow(0 8px 24px rgba(0,0,0,0.25));
     }
     .cope-splash-tagline {
       font-family: 'Cormorant Garamond', serif;
-      font-size: clamp(1.05rem, 3.6vw, 1.4rem);
+      font-size: clamp(1.08rem, 3.6vw, 1.42rem);
       color: var(--white);
       letter-spacing: 0.5px;
       line-height: 1.2;
@@ -586,19 +594,19 @@
     }
     @media (max-width: 480px) {
       #cope-splash {
-        padding: calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 24px);
+        padding: max(env(safe-area-inset-top), 20px) max(env(safe-area-inset-right), 16px) max(env(safe-area-inset-bottom), 24px) max(env(safe-area-inset-left), 16px);
       }
       .cope-splash-content {
-        width: min(92vw, 300px);
         gap: 12px;
+        padding: 0;
       }
       .cope-splash-logo {
-        width: clamp(108px, 38vw, 148px);
-        max-width: 148px;
-        max-height: 148px;
+        width: clamp(138px, 46vw, 180px);
+        max-width: 180px;
+        max-height: 180px;
       }
       .cope-splash-tagline {
-        font-size: 1rem;
+        font-size: 1.02rem;
       }
       .cope-splash-powered {
         font-size: 0.56rem;
