@@ -1,10 +1,11 @@
-const CACHE = 'cope-v6';
+const CACHE = 'cope-v7';
 const ASSETS = [
   '/Cope/',
   '/Cope/index.html',
   '/Cope/manifest.json',
   '/Cope/logo-192.png',
   '/Cope/logo-512.png',
+  '/Cope/splash-logo.png',
 ];
 
 self.addEventListener('install', e => {
