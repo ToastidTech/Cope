@@ -495,7 +495,8 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: calc(env(safe-area-inset-top) + 24px) 20px calc(env(safe-area-inset-bottom) + 28px);
+      min-height: 100dvh;
+      padding: calc(env(safe-area-inset-top) + 28px) 20px calc(env(safe-area-inset-bottom) + 32px);
       background: radial-gradient(circle at 50% 30%, rgba(184,159,216,0.14), rgba(8,8,15,0.96) 58%, rgba(8,8,15,1) 100%);
       overflow: hidden;
     }
@@ -527,25 +528,26 @@
     .cope-splash-content {
       position: relative;
       z-index: 2;
-      width: min(84vw, 280px);
+      width: min(92vw, 360px);
       display: flex;
       flex-direction: column;
       align-items: center;
       text-align: center;
-      gap: 12px;
+      gap: 14px;
     }
     .cope-splash-logo {
       display: block;
-      width: clamp(96px, 28vw, 148px);
+      width: clamp(120px, 34vw, 180px);
       height: auto;
-      max-width: 148px;
-      max-height: 148px;
+      aspect-ratio: 1;
+      max-width: 180px;
+      max-height: 180px;
       object-fit: contain;
       filter: drop-shadow(0 8px 24px rgba(0,0,0,0.25));
     }
     .cope-splash-tagline {
       font-family: 'Cormorant Garamond', serif;
-      font-size: clamp(1rem, 3.3vw, 1.25rem);
+      font-size: clamp(1.05rem, 3.6vw, 1.4rem);
       color: var(--white);
       letter-spacing: 0.5px;
       line-height: 1.2;
@@ -587,16 +589,16 @@
         padding: calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 24px);
       }
       .cope-splash-content {
-        width: min(88vw, 240px);
-        gap: 10px;
+        width: min(92vw, 300px);
+        gap: 12px;
       }
       .cope-splash-logo {
-        width: clamp(84px, 24vw, 118px);
-        max-width: 118px;
-        max-height: 118px;
+        width: clamp(108px, 38vw, 148px);
+        max-width: 148px;
+        max-height: 148px;
       }
       .cope-splash-tagline {
-        font-size: 0.95rem;
+        font-size: 1rem;
       }
       .cope-splash-powered {
         font-size: 0.56rem;
