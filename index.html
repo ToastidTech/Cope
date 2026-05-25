@@ -993,18 +993,20 @@
   var homeAffirmationSwapTimer = null;
 
   function renderHomeAffirmation(immediate) {
-    var textEl = document.getElementById('homeAffirmationText');
-    var countEl = document.getElementById('homeAffirmationCount');
-    if (!textEl || !countEl) return;
-    var update = function() {
-      textEl.textContent = homeAffirmations[homeAffirmationIndex];
-      countEl.textContent = String(homeAffirmationIndex + 1).padStart(2, '0') + ' / ' + String(homeAffirmations.length).padStart(2, '0');
-      textEl.classList.add('visible');
-    };
-    textEl.classList.remove('visible');
-    clearTimeout(homeAffirmationSwapTimer);
-    homeAffirmationSwapTimer = setTimeout(update, immediate ? 0 : 220);
-  }
+  var textEl = document.getElementById('homeAffirmationText');
+  var countEl = document.getElementById('homeAffirmationCount');
+  if (!textEl || !countEl) return;
+  var update = function() {
+    textEl.textContent = homeAffirmations[homeAffirmationIndex];
+    countEl.textContent = String(homeAffirmationIndex + 1).padStart(2, '0') + ' / ' + String(homeAffirmations.length).padStart(2, '0');
+    // Force browser reflow by triggering a layout recalculation
+    void textEl.offsetHeight;
+    textEl.classList.add('visible');
+  };
+  textEl.classList.remove('visible');
+  clearTimeout(homeAffirmationSwapTimer);
+  homeAffirmationSwapTimer = setTimeout(update, immediate ? 50 : 220);
+}
 
   function advanceHomeAffirmation() {
     homeAffirmationIndex = (homeAffirmationIndex + 1) % homeAffirmations.length;
