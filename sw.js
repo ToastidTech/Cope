@@ -1,4 +1,4 @@
-const CACHE = 'cope-v6';
+const CACHE = 'cope-v7';
 const ASSETS = [
   '/Cope/',
   '/Cope/index.html',
@@ -25,7 +25,7 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   if (e.request.url.includes('fonts.googleapis.com') ||
       e.request.url.includes('square.link') ||
-      e.request.url.includes('workers.dev')) {
+     {
     e.respondWith(fetch(e.request));
     return;
   }
