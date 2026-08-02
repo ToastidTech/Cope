@@ -892,6 +892,7 @@ $39.99
       </div>
       <button class="sheet-buy-btn" id="sheetBuyBtn" onclick="goToSquare()">✦ Continue →</button>
       <div class="sheet-promo-row" id="confirmRow">
+        <input class="sheet-promo-input" id="promoInput" type="text" placeholder="Have a code? Enter it here..." maxlength="30">
         <input class="sheet-promo-input" id="promoInput" type="text" placeholder="Paste Square confirmation code here..." maxlength="30">
         <button class="sheet-promo-btn" id="codeApplyBtn" onclick="applyPromo()">Apply</button>
       </div>
@@ -1229,64 +1230,46 @@ $39.99
     if (promoMsg) promoMsg.innerHTML = '';
   }
 
-  function validateConfirmationCode() {
-    var code = document.getElementById('promoInput').value.trim().toUpperCase();
-    var msg = document.getElementById('promoMsg');
-    if (!code) {
-      msg.innerHTML = '<span style="color:var(--amber)">Please paste your Square confirmation code first.</span>';
-      return;
-    }
-    msg.innerHTML = '<span style="color:var(--lavender)">Verifying your payment... 💜</span>';
-    
-    // Call the validation endpoint (your Cloudflare Worker or a dedicated endpoint)
-    // Replace the URL below with your actual validation endpoint
-    fetch('https://muddy-violet-2a0d.toastidtechllc.workers.dev/validate-order', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        confirmationCode: code,
-        app: 'cope',
-        plan: selectedCopePlan
-      })
-    })
-    .then(function(res) { return res.json(); })
-    .then(function(data) {
-      if (data.success || data.unlocked) {
-        grantAccess();
-        msg.innerHTML = '<span style="color:var(--green)">✓ Payment verified! Welcome to Cope. 💜</span>';
-        setTimeout(function() { closePaywall(); renderHome(); }, 1800);
-      } else {
-        msg.innerHTML = '<span style="color:var(--red)">✗ That confirmation code wasn\'t found. Please check your Square email and try again.</span>';
-      }
-    })
-    .catch(function() {
-      // Fallback: accept known test codes for demo / if validation endpoint is unavailable
-      // TST2026 = permanent owner code (works on all apps/plans)
-      var TEST_CODES = ['DEMO2026', 'TST2026', 'TESTCOPE'];
-      if (TEST_CODES.indexOf(code) !== -1) {
-        grantAccess();
-        msg.innerHTML = '<span style="color:var(--green)">✓ Demo access granted! Welcome to Cope. 💜</span>';
-        setTimeout(function() { closePaywall(); renderHome(); }, 1800);
-      } else {
-        msg.innerHTML = '<span style="color:var(--red)">✗ Could not verify right now. Please try again or contact info@toastidtech.com</span>';
-      }
-    });
+  
+ function applyPromo() {
+  var code = document.getElementById('promoInput').value.trim().toUpperCase();
+  var msg = document.getElementById('promoMsg');
+  if (!code) {
+    msg.innerHTML = '<span style="color:var(--amber)">Enter a code first.</span>';
+    return;
+  }
+  var TEST_CODES = ['DEMO2026', 'TST2026', 'TESTCOPE'];
+  if (code === PROMO_CODE || TEST_CODES.indexOf(code) !== -1) {
+    grantAccess();
+    msg.innerHTML = '<span style="color:var(--green)">✓ Welcome to Cope. You\'re unlocked. 💜</span>';
+    setTimeout(function() { closePaywall(); renderHome(); }, 1500);
+    return;
+  }
+  if (code === DISCOUNT_CODE) {
+    msg.innerHTML = '<span style="color:var(--green)">💜 Code applied! Tap your plan to continue at a discount.</span>';
+    return;
   }
 
-  function applyPromo() {
-    var code = document.getElementById('promoInput').value.trim().toUpperCase();
-    var msg = document.getElementById('promoMsg');
-    if (code === PROMO_CODE) {
+  msg.innerHTML = '<span style="color:var(--lavender)">Verifying your payment... 💜</span>';
+  fetch('https://muddy-violet-2a0d.toastidtechllc.workers.dev/validate-order', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ confirmationCode: code, app: 'cope', plan: selectedCopePlan })
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    if (data.success || data.unlocked) {
       grantAccess();
-      msg.innerHTML = '<span style="color:var(--green)">✓ Welcome to Cope. You\'re unlocked. 💜</span>';
-      setTimeout(function() { closePaywall(); renderHome(); }, 1500);
-    } else if (code === DISCOUNT_CODE) {
-      msg.innerHTML = '<span style="color:var(--green)">💜 Code applied! Tap your plan to continue at a discount.</span>';
+      msg.innerHTML = '<span style="color:var(--green)">✓ Payment verified! Welcome to Cope. 💜</span>';
+      setTimeout(function() { closePaywall(); renderHome(); }, 1800);
     } else {
-      msg.innerHTML = '<span style="color:var(--red)">✗ Invalid code. Please try again.</span>';
+      msg.innerHTML = '<span style="color:var(--red)">✗ That confirmation code wasn\'t found. Please check your Square email and try again.</span>';
     }
-  }
-
+  })
+  .catch(function() {
+    msg.innerHTML = '<span style="color:var(--red)">✗ Could not verify right now. Please try again or contact info@toastidtech.com</span>';
+  });
+} 
   // ── ASMR ──
   var ASMR_VIDEOS = [
     { id: '7lumWMaIsbU', name: 'Rain on Tent', desc: 'Heavy rain and thunder on canvas' },
