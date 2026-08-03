@@ -893,7 +893,6 @@ $39.99
       <button class="sheet-buy-btn" id="sheetBuyBtn" onclick="goToSquare()">✦ Continue →</button>
       <div class="sheet-promo-row" id="confirmRow">
         <input class="sheet-promo-input" id="promoInput" type="text" placeholder="Have a code? Enter it here..." maxlength="30">
-        <input class="sheet-promo-input" id="promoInput" type="text" placeholder="Paste Square confirmation code here..." maxlength="30">
         <button class="sheet-promo-btn" id="codeApplyBtn" onclick="applyPromo()">Apply</button>
       </div>
       <div class="promo-msg" id="promoMsg"></div>
@@ -1171,147 +1170,6 @@ function updateAILockUI() {
   var selectedCopePlan = 'standalone';
 
   function selectCopePlan(plan) {
-  selectedCopePlan = plan;
-  var standalone = document.getElementById('plan-standalone');
-  var ai         = document.getElementById('plan-ai');
-  var btn        = document.getElementById('sheetBuyBtn');
-  if (plan === 'standalone') {
-    standalone.style.borderColor = 'rgba(184,159,216,0.6)';
-    standalone.style.background  = 'rgba(184,159,216,0.12)';
-    ai.style.borderColor         = 'rgba(200,169,110,0.2)';
-    ai.style.background          = 'rgba(200,169,110,0.07)';
-    btn.textContent = '✦ Get Cope — $12.99 →';
-  } else {
-    ai.style.borderColor         = 'rgba(200,169,110,0.6)';
-    ai.style.background          = 'rgba(200,169,110,0.12)';
-    standalone.style.borderColor = 'rgba(184,159,216,0.2)';
-    standalone.style.background  = 'rgba(184,159,216,0.06)';
-    btn.textContent = '💬 Get Cope AI — $19.99/mo →';
-  }
-}
-
-function selectCopePlan(plan) {
-  selectedCopePlan = plan;
-  var standalone = document.getElementById('plan-standalone');
-  var ai         = document.getElementById('plan-ai');
-  var btn        = document.getElementById('sheetBuyBtn');
-  if (plan === 'standalone') {
-    standalone.style.borderColor = 'rgba(184,159,216,0.6)';
-    standalone.style.background  = 'rgba(184,159,216,0.12)';
-    ai.style.borderColor         = 'rgba(200,169,110,0.2)';
-    ai.style.background          = 'rgba(200,169,110,0.07)';
-    btn.textContent = '✦ Get Cope — $12.99 →';
-  } else {
-    ai.style.borderColor         = 'rgba(200,169,110,0.6)';
-    ai.style.background          = 'rgba(200,169,110,0.12)';
-    standalone.style.borderColor = 'rgba(184,159,216,0.2)';
-    standalone.style.background  = 'rgba(184,159,216,0.06)';
-    btn.textContent = '💬 Get Cope AI — $19.99/mo →';
-  }
-}
-
-function openPaywall(defaultPlan) {
-  selectedCopePlan = defaultPlan || 'standalone';
-  document.getElementById('paywallModal').classList.add('open');
-  document.body.style.overflow = 'hidden';
-  setTimeout(function() { selectCopePlan(selectedCopePlan); }, 50);
-}
-function selectCopePlan(plan) {
-  selectedCopePlan = plan;
-  var standalone = document.getElementById('plan-standalone');
-  var ai         = document.getElementById('plan-ai');
-  var btn        = document.getElementById('sheetBuyBtn');
-  if (plan === 'standalone') {
-    standalone.style.borderColor = 'rgba(184,159,216,0.6)';
-    standalone.style.background  = 'rgba(184,159,216,0.12)';
-    ai.style.borderColor         = 'rgba(200,169,110,0.2)';
-    ai.style.background          = 'rgba(200,169,110,0.07)';
-    btn.textContent = '✦ Get Cope — $12.99 →';
-  } else {
-    ai.style.borderColor         = 'rgba(200,169,110,0.6)';
-    ai.style.background          = 'rgba(200,169,110,0.12)';
-    standalone.style.borderColor = 'rgba(184,159,216,0.2)';
-    standalone.style.background  = 'rgba(184,159,216,0.06)';
-    btn.textContent = '💬 Get Cope AI — $19.99/mo →';
-  }
-}
-
-function openPaywall(defaultPlan) {
-  selectedCopePlan = defaultPlan || 'standalone';
-  document.getElementById('paywallModal').classList.add('open');
-  document.body.style.overflow = 'hidden';
-  setTimeout(function() { selectCopePlan(selectedCopePlan); }, 50);
-}
-
-function goToSquare() {
-  var url = selectedCopePlan === 'ai' ? SQUARE_COPE_AI : SQUARE_STANDALONE;
-  window.open(url, '_blank');
-  var sheet = document.getElementById('paywallModal').querySelector('.modal-sheet');
-  var buyBtn = document.getElementById('sheetBuyBtn');
-  var promoRow = document.getElementById('confirmRow');
-  var promoMsg = document.getElementById('promoMsg');
-  var planSelector = document.getElementById('planSelector');
-  var sheetSub = sheet.querySelector('.sheet-sub');
-
-  if (planSelector) planSelector.style.display = 'none';
-  if (buyBtn) {
-    buyBtn.textContent = '✓ Verify Payment';
-    buyBtn.onclick = applyPromo;
-  }
-  if (sheetSub) {
-    sheetSub.textContent = 'After completing your payment, paste your Square confirmation code below to unlock ' + (selectedCopePlan === 'ai' ? 'Cope AI' : 'Cope') + '.';
-  }
-  if (promoRow) promoRow.style.display = 'flex';
-  if (promoMsg) promoMsg.innerHTML = '';
-}
-function goToSquare() {
-  var url = selectedCopePlan === 'ai' ? SQUARE_COPE_AI : SQUARE_STANDALONE;
-  window.open(url, '_blank');
-  var sheet = document.getElementById('paywallModal').querySelector('.modal-sheet');
-  var buyBtn = document.getElementById('sheetBuyBtn');
-  var promoRow = document.getElementById('confirmRow');
-  var promoMsg = document.getElementById('promoMsg');
-  var planSelector = document.getElementById('planSelector');
-  var sheetSub = sheet.querySelector('.sheet-sub');
-
-  if (planSelector) planSelector.style.display = 'none';
-  if (buyBtn) {
-    buyBtn.textContent = '✓ Verify Payment';
-    buyBtn.onclick = applyPromo;
-  }
-  if (sheetSub) {
-    sheetSub.textContent = 'After completing your payment, paste your Square confirmation code below to unlock ' + (selectedCopePlan === 'ai' ? 'Cope AI' : 'Cope') + '.';
-  }
-  if (promoRow) promoRow.style.display = 'flex';
-  if (promoMsg) promoMsg.innerHTML = '';
-}
-  selectedCopePlan = defaultPlan || 'standalone';
-  document.getElementById('paywallModal').classList.add('open');
-  document.body.style.overflow = 'hidden';
-  setTimeout(function() { selectCopePlan(selectedCopePlan); }, 50);
-}
-
-function goToSquare() {
-  var url = selectedCopePlan === 'ai' ? SQUARE_COPE_AI : SQUARE_STANDALONE;
-  window.open(url, '_blank');
-  var sheet = document.getElementById('paywallModal').querySelector('.modal-sheet');
-  var buyBtn = document.getElementById('sheetBuyBtn');
-  var promoRow = document.getElementById('confirmRow');
-  var promoMsg = document.getElementById('promoMsg');
-  var planSelector = document.getElementById('planSelector');
-  var sheetSub = sheet.querySelector('.sheet-sub');
-
-  if (planSelector) planSelector.style.display = 'none';
-  if (buyBtn) {
-    buyBtn.textContent = '✓ Verify Payment';
-    buyBtn.onclick = applyPromo;
-  }
-  if (sheetSub) {
-    sheetSub.textContent = 'After completing your payment, paste your Square confirmation code below to unlock ' + (selectedCopePlan === 'ai' ? 'Cope AI' : 'Cope') + '.';
-  }
-  if (promoRow) promoRow.style.display = 'flex';
-  if (promoMsg) promoMsg.innerHTML = '';
-}
     selectedCopePlan = plan;
     var standalone = document.getElementById('plan-standalone');
     var bundle     = document.getElementById('plan-bundle');
@@ -1372,7 +1230,7 @@ function goToSquare() {
     if (planSelector) planSelector.style.display = 'none';
     if (buyBtn) {
       buyBtn.textContent = '✓ Verify Payment';
-      buyBtn.onclick = validateConfirmationCode;
+      buyBtn.onclick = applyPromo;
     }
     if (sheetSub) {
       sheetSub.textContent = 'After completing your payment, paste your Square confirmation code below to unlock Cope.';
