@@ -1439,17 +1439,19 @@ function updateAILockUI() {
   
   function sendMessage() {
     var input = document.getElementById('chatInput');
-    var msg = input.value.trim();
+    var msg = input ? input.value.trim() : '';
     if (!msg) return;
     
     // Disable send button
     var sendBtn = document.getElementById('sendBtn');
-    sendBtn.disabled = true;
-    sendBtn.textContent = 'Sending...';
+    if (sendBtn) {
+      sendBtn.disabled = true;
+      sendBtn.textContent = 'Sending...';
+    }
     
     // Show user message
     addChatMessage('user', msg);
-    input.value = '';
+    if (input) input.value = '';
     
     // Show typing indicator
     var typingId = 'typing-' + Date.now();
@@ -1465,18 +1467,22 @@ function updateAILockUI() {
       addChatMessage('assistant', response);
       
       // Re-enable button
-      sendBtn.disabled = false;
-      sendBtn.textContent = 'Send';
-      input.focus();
+      if (sendBtn) {
+        sendBtn.disabled = false;
+        sendBtn.textContent = 'Send';
+      }
+      if (input) input.focus();
     }, function(error) {
       var typingEl = document.getElementById(typingId);
       if (typingEl) typingEl.remove();
       addChatMessage('assistant', error);
       
       // Re-enable button
-      sendBtn.disabled = false;
-      sendBtn.textContent = 'Send';
-      input.focus();
+      if (sendBtn) {
+        sendBtn.disabled = false;
+        sendBtn.textContent = 'Send';
+      }
+      if (input) input.focus();
     });
   }
   
@@ -1556,21 +1562,31 @@ function updateAILockUI() {
   }
   
   // Enter key to send
-  document.addEventListener('DOMContentLoaded', function() {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+      var input = document.getElementById('chatInput');
+      if (input) {
+        input.addEventListener('keypress', function(e) {
+          if (e.key === 'Enter') sendMessage();
+        });
+      }
+    });
+  } else {
     var input = document.getElementById('chatInput');
     if (input) {
       input.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') sendMessage();
       });
     }
-  });
+  }
 
   // ── INIT ──
   setGreeting();
   renderHome();
   renderJournalEntries();
   renderSleepHistory();
-  document.getElementById('breathCount').textContent = '4s inhale · 4s hold · 6s exhale';
+  var breathCountEl = document.getElementById('breathCount');
+  if (breathCountEl) breathCountEl.textContent = '4s inhale · 4s hold · 6s exhale';
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function() {
