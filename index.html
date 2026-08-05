@@ -1283,8 +1283,8 @@ function updateAILockUI() {
   }
   var TEST_CODES = ['DEMO2026', 'TST2026', 'TESTCOPE'];
   if (code === PROMO_CODE || TEST_CODES.indexOf(code) !== -1) {
-    grantAccess();
-    msg.innerHTML = '<span style="color:var(--green)">✓ Welcome to Cope. You\'re unlocked. 💜</span>';
+    grantAIAccess();
+    msg.innerHTML = '<span style="color:var(--green)">✓ Welcome to Cope AI. You\'re unlocked. ✦</span>';
     setTimeout(function() { closePaywall(); renderHome(); }, 1500);
     return;
   }
@@ -1581,12 +1581,17 @@ function updateAILockUI() {
   }
 
   // ── INIT ──
-  setGreeting();
-  renderHome();
-  renderJournalEntries();
-  renderSleepHistory();
-  var breathCountEl = document.getElementById('breathCount');
-  if (breathCountEl) breathCountEl.textContent = '4s inhale · 4s hold · 6s exhale';
+  try {
+    setGreeting();
+    renderHome();
+    renderJournalEntries();
+    renderSleepHistory();
+    var breathCountEl = document.getElementById('breathCount');
+    if (breathCountEl) breathCountEl.textContent = '4s inhale · 4s hold · 6s exhale';
+  } catch (initErr) {
+    console.error('❌ Init error:', initErr);
+    addChatMessage('system', '⚠️ Init error: ' + initErr.message);
+  }
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function() {
