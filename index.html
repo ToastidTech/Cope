@@ -1503,6 +1503,9 @@ function updateAILockUI() {
       messages: messages
     };
     
+    console.log('Calling worker at:', CLOUDFLARE_WORKER_URL);
+    console.log('Payload:', payload);
+    
     fetch(CLOUDFLARE_WORKER_URL, {
       method: 'POST',
       headers: {
@@ -1512,10 +1515,12 @@ function updateAILockUI() {
       body: JSON.stringify(payload)
     })
     .then(function(res) {
+      console.log('Response status:', res.status);
       if (!res.ok) throw new Error('API error: ' + res.status);
       return res.json();
     })
     .then(function(data) {
+      console.log('Response data:', data);
       if (data.content && data.content[0] && data.content[0].text) {
         var responseText = data.content[0].text;
         
@@ -1525,12 +1530,13 @@ function updateAILockUI() {
         
         onSuccess(responseText);
       } else {
-        onError('Invalid response format');
+        console.error('Invalid response format:', data);
+        onError('Invalid response format: ' + JSON.stringify(data));
       }
     })
     .catch(function(err) {
       console.error('Cope AI error:', err);
-      onError(err.message);
+      onError('⚠️ Error: ' + err.message + '\n\nWorker URL: ' + CLOUDFLARE_WORKER_URL);
     });
   }
   
