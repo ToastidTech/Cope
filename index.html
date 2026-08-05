@@ -1581,17 +1581,15 @@ function updateAILockUI() {
   }
 
   // ── INIT ──
+  try { setGreeting(); } catch (e) { console.error('setGreeting error:', e); }
+  try { renderHome(); } catch (e) { console.error('renderHome error:', e); }
+  try { renderJournalEntries(); } catch (e) { console.error('renderJournalEntries error:', e); }
+  try { renderSleepHistory(); } catch (e) { console.error('renderSleepHistory error:', e); }
+  
   try {
-    setGreeting();
-    renderHome();
-    renderJournalEntries();
-    renderSleepHistory();
     var breathCountEl = document.getElementById('breathCount');
     if (breathCountEl) breathCountEl.textContent = '4s inhale · 4s hold · 6s exhale';
-  } catch (initErr) {
-    console.error('❌ Init error:', initErr);
-    addChatMessage('system', '⚠️ Init error: ' + initErr.message);
-  }
+  } catch (e) { console.error('breathCount error:', e); }
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function() {
