@@ -1442,14 +1442,18 @@ function updateAILockUI() {
     var msg = input.value.trim();
     if (!msg) return;
     
+    // Disable send button
+    var sendBtn = document.getElementById('sendBtn');
+    sendBtn.disabled = true;
+    sendBtn.textContent = 'Sending...';
+    
     // Show user message
     addChatMessage('user', msg);
     input.value = '';
-    input.focus();
     
     // Show typing indicator
     var typingId = 'typing-' + Date.now();
-    addChatMessage('assistant', '...', typingId);
+    addChatMessage('assistant', '✦ Thinking...', typingId);
     
     // Call Claude via Cloudflare Worker
     callCopeAI(msg, function(response) {
@@ -1459,10 +1463,20 @@ function updateAILockUI() {
       
       // Show response
       addChatMessage('assistant', response);
+      
+      // Re-enable button
+      sendBtn.disabled = false;
+      sendBtn.textContent = 'Send';
+      input.focus();
     }, function(error) {
       var typingEl = document.getElementById(typingId);
       if (typingEl) typingEl.remove();
-      addChatMessage('assistant', 'I had trouble connecting. Please try again.');
+      addChatMessage('assistant', error);
+      
+      // Re-enable button
+      sendBtn.disabled = false;
+      sendBtn.textContent = 'Send';
+      input.focus();
     });
   }
   
@@ -1491,7 +1505,7 @@ function updateAILockUI() {
       { role: 'user', content: userMessage }
     ];
     
-    // Include recent chat history for context (last 5 exchanges)
+    // Include recent chat history for context
     if (chatHistory.length > 0) {
       messages = chatHistory.slice(-10).concat(messages);
     }
@@ -1503,8 +1517,8 @@ function updateAILockUI() {
       messages: messages
     };
     
-    console.log('Calling worker at:', CLOUDFLARE_WORKER_URL);
-    console.log('Payload:', payload);
+    console.log('📤 Sending to:', CLOUDFLARE_WORKER_URL);
+    console.log('🔑 API Key prefix:', PWA_API_KEY.substring(0, 8) + '...');
     
     fetch(CLOUDFLARE_WORKER_URL, {
       method: 'POST',
@@ -1515,28 +1529,29 @@ function updateAILockUI() {
       body: JSON.stringify(payload)
     })
     .then(function(res) {
-      console.log('Response status:', res.status);
-      if (!res.ok) throw new Error('API error: ' + res.status);
+      console.log('📥 Response status:', res.status);
+      if (!res.ok) {
+        throw new Error('Server error: ' + res.status);
+      }
       return res.json();
     })
     .then(function(data) {
-      console.log('Response data:', data);
+      console.log('✅ Data received:', data);
       if (data.content && data.content[0] && data.content[0].text) {
         var responseText = data.content[0].text;
-        
-        // Store in history
         chatHistory.push({ role: 'user', content: userMessage });
         chatHistory.push({ role: 'assistant', content: responseText });
-        
         onSuccess(responseText);
+      } else if (data.error) {
+        throw new Error('API Error: ' + data.error);
       } else {
-        console.error('Invalid response format:', data);
-        onError('Invalid response format: ' + JSON.stringify(data));
+        throw new Error('Invalid response format');
       }
     })
     .catch(function(err) {
-      console.error('Cope AI error:', err);
-      onError('⚠️ Error: ' + err.message + '\n\nWorker URL: ' + CLOUDFLARE_WORKER_URL);
+      console.error('❌ Cope AI error:', err);
+      var errorMsg = '⚠️ ' + err.message + '\n\n(Worker: ' + CLOUDFLARE_WORKER_URL + ')';
+      onError(errorMsg);
     });
   }
   
