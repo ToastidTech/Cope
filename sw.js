@@ -1,4 +1,4 @@
-const CACHE = 'cope-v16';
+const CACHE = 'cope-v17';
 const ASSETS = [
   '/Cope/',
   '/Cope/index.html',
