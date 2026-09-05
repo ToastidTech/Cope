@@ -56,5 +56,25 @@ html = html.replace(
   // Enter key to send`
 );
 
+// Keep the PWA service-worker path valid both on GitHub Pages (/Cope/)
+// and when the app is served from the AWS container root (/).
+html = html.replace(
+  "navigator.serviceWorker.register('/Cope/sw.js')",
+  "navigator.serviceWorker.register('./sw.js')"
+);
+
 fs.writeFileSync(file, html);
+
+// Make the manifest portable between the GitHub Pages subpath and the
+// AWS container root. Relative paths resolve against the manifest location.
+const manifestFile = "manifest.json";
+let manifest = JSON.parse(fs.readFileSync(manifestFile, "utf8"));
+manifest.start_url = "./";
+manifest.scope = "./";
+manifest.icons = (manifest.icons || []).map(icon => ({
+  ...icon,
+  src: icon.src.replace(/^\/Cope\//, "./")
+}));
+fs.writeFileSync(manifestFile, JSON.stringify(manifest, null, 2) + "\n");
+
 console.log("Cope frontend prepared for AWS /api/cope-ai");
