@@ -1,11 +1,11 @@
-const CACHE = 'cope-v19';
+const CACHE = 'cope-v20';
 const ASSETS = [
-  '/Cope/',
-  '/Cope/index.html',
-  '/Cope/manifest.json',
-  '/Cope/logo-192.png',
-  '/Cope/logo-512.png',
-  '/Cope/splash-logo.png',
+  './',
+  './index.html',
+  './manifest.json',
+  './logo-192.png',
+  './logo-512.png',
+  './splash-logo.png',
 ];
 
 self.addEventListener('install', e => {
@@ -25,22 +25,13 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   const url = e.request.url;
 
-  // During the AWS migration, requests from the legacy Cope client to the
-  // retired Cloudflare AI endpoint are redirected to the same-origin AWS API.
-  // This keeps already-installed PWAs from continuing to depend on Cloudflare.
-  if (url.includes('muddy-violet-2a0d.toastidtechllc.workers.dev') &&
-      !url.includes('/validate-order')) {
-    e.respondWith(
-      fetch('/api/cope-ai', {
-        method: e.request.method,
-        headers: { 'Content-Type': 'application/json' },
-        body: e.request.method === 'GET' || e.request.method === 'HEAD' ? undefined : e.request.clone().body
-      })
-    );
-    return;
-  }
-
-  if (url.includes('fonts.googleapis.com') || url.includes('square.link') || url.includes('youtube.com') || url.includes('img.youtube.com')) {
+  // Keep external services network-only. AI requests use the same-origin
+  // backend and are intentionally never cached.
+  if (url.includes('/api/cope-ai') ||
+      url.includes('fonts.googleapis.com') ||
+      url.includes('square.link') ||
+      url.includes('youtube.com') ||
+      url.includes('img.youtube.com')) {
     e.respondWith(fetch(e.request));
     return;
   }
