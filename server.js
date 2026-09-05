@@ -1,10 +1,13 @@
 const express = require("express");
+const fs = require("fs");
+const path = require("path");
 
 const app = express();
 const PORT = Number(process.env.PORT) || 8080;
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 const RATE_LIMIT_MAX = 20;
 const requestLog = new Map();
+const LEADS_FILE = process.env.COPE_LEADS_FILE || path.join(__dirname, "data", "leads.jsonl");
 
 app.disable("x-powered-by");
 app.set("trust proxy", 1);
@@ -59,6 +62,23 @@ function validateMessages(messages) {
   );
 }
 
+function validateLead(body) {
+  const name = typeof body?.name === "string" ? body.name.trim() : "";
+  const email = typeof body?.email === "string" ? body.email.trim() : "";
+  const comment = typeof body?.comment === "string" ? body.comment.trim() : "";
+
+  if (!name || name.length > 120) return null;
+  if (!email || email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return null;
+  if (comment.length > 2000) return null;
+
+  return { name, email, comment, submittedAt: new Date().toISOString() };
+}
+
+async function saveLead(lead) {
+  await fs.promises.mkdir(path.dirname(LEADS_FILE), { recursive: true });
+  await fs.promises.appendFile(LEADS_FILE, JSON.stringify(lead) + "\n", "utf8");
+}
+
 async function callAnthropic(body) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
@@ -110,6 +130,11 @@ app.options("/api/cope-ai", (req, res) => {
   return res.status(204).end();
 });
 
+app.options("/api/lead", (req, res) => {
+  corsHeaders(res);
+  return res.status(204).end();
+});
+
 app.post("/api/cope-ai", async (req, res) => {
   const rate = checkRateLimit(getClientIP(req));
   if (!rate.allowed) {
@@ -124,6 +149,26 @@ app.post("/api/cope-ai", async (req, res) => {
     return send(res, error.status || 500, {
       error: error.message || "Cope AI is temporarily unavailable."
     });
+  }
+});
+
+app.post("/api/lead", async (req, res) => {
+  const rate = checkRateLimit(getClientIP(req));
+  if (!rate.allowed) {
+    return send(res, 429, { error: "Too Many Requests", retryAfter: rate.retryAfter });
+  }
+
+  const lead = validateLead(req.body || {});
+  if (!lead) {
+    return send(res, 400, { error: "Name and email are required; comment is optional and limited to 2,000 characters." });
+  }
+
+  try {
+    await saveLead(lead);
+    return send(res, 201, { ok: true });
+  } catch (error) {
+    console.error("Lead capture error:", error);
+    return send(res, 500, { error: "Lead submission could not be saved." });
   }
 });
 
