@@ -41,19 +41,14 @@ function checkRateLimit(ip) {
 
   entry.count += 1;
   if (entry.count > RATE_LIMIT_MAX) {
-    return {
-      allowed: false,
-      retryAfter: Math.ceil((entry.resetAt - now) / 1000)
-    };
+    return { allowed: false, retryAfter: Math.ceil((entry.resetAt - now) / 1000) };
   }
 
   return { allowed: true };
 }
 
 function validateMessages(messages) {
-  if (!Array.isArray(messages) || messages.length === 0 || messages.length > 12) {
-    return false;
-  }
+  if (!Array.isArray(messages) || messages.length === 0 || messages.length > 12) return false;
 
   return messages.every(message =>
     message &&
@@ -79,7 +74,7 @@ async function callAnthropic(body) {
   }
 
   const requestBody = {
-    model: typeof body.model === "string" && body.model.startsWith("claude-") ? body.model : "claude-opus-4-1",
+    model: process.env.COPE_MODEL || "claude-opus-4-8",
     max_tokens: Math.min(Math.max(Number(body.max_tokens) || 500, 1), 1000),
     messages: body.messages
   };
@@ -118,10 +113,7 @@ app.options("/api/cope-ai", (req, res) => {
 app.post("/api/cope-ai", async (req, res) => {
   const rate = checkRateLimit(getClientIP(req));
   if (!rate.allowed) {
-    return send(res, 429, {
-      error: "Too Many Requests",
-      retryAfter: rate.retryAfter
-    });
+    return send(res, 429, { error: "Too Many Requests", retryAfter: rate.retryAfter });
   }
 
   try {
@@ -136,21 +128,15 @@ app.post("/api/cope-ai", async (req, res) => {
 });
 
 app.get("/health", (req, res) => {
-  return res.status(200).json({
-    service: "cope-ai",
-    status: "ok"
-  });
+  return res.status(200).json({ service: "cope-ai", status: "ok" });
 });
 
-app.use(express.static(__dirname, {
-  extensions: ["html"]
-}));
+app.use(express.static(__dirname, { extensions: ["html"] }));
 
 app.use((req, res) => {
   if (req.method === "GET" && !req.path.startsWith("/api/")) {
     return res.sendFile(__dirname + "/index.html");
   }
-
   return send(res, 404, { error: "Not found." });
 });
 
