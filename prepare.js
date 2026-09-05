@@ -63,6 +63,12 @@ html = html.replace(
   "navigator.serviceWorker.register('./sw.js')"
 );
 
+// Add the optional, consent-based Toastid Tech lead capture to the production build.
+const leadScript = '<script src="./lead-capture.js" defer></script>';
+if (!html.includes('lead-capture.js')) {
+  html = html.replace('</body>', `  ${leadScript}\n</body>`);
+}
+
 fs.writeFileSync(file, html);
 
 // Make the manifest portable between the GitHub Pages subpath and the
