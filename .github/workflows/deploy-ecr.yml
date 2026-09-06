@@ -1,4 +1,4 @@
-name: Build and Push Cope to ECR
+name: Build, Push, and Deploy Cope
 
 on:
   push:
@@ -13,6 +13,7 @@ permissions:
 env:
   AWS_REGION: us-west-2
   ECR_REPOSITORY: cope
+  ECS_SERVICE: Cope-service-tfpqzk7g
 
 jobs:
   build-and-push:
@@ -40,3 +41,81 @@ jobs:
           tags: |
             ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
             ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
+
+      - name: Find Cope ECS cluster
+        id: ecs
+        run: |
+          set -euo pipefail
+          CLUSTER_ARN="$(
+            aws ecs list-clusters --region "$AWS_REGION" --query 'clusterArns[]' --output text |
+            tr '\t' '\n' |
+            while read -r cluster; do
+              [ -z "$cluster" ] && continue
+              service_name="$(aws ecs describe-services --region "$AWS_REGION" --cluster "$cluster" --services "$ECS_SERVICE" --query 'services[0].serviceName' --output text 2>/dev/null || true)"
+              if [ "$service_name" = "$ECS_SERVICE" ]; then
+                echo "$cluster"
+                break
+              fi
+            done
+          )"
+          if [ -z "$CLUSTER_ARN" ]; then
+            echo "Could not find ECS cluster containing $ECS_SERVICE"
+            exit 1
+          fi
+          echo "cluster=$CLUSTER_ARN" >> "$GITHUB_OUTPUT"
+          echo "Using cluster: $CLUSTER_ARN"
+
+      - name: Deploy Cope to ECS
+        env:
+          CLUSTER_ARN: ${{ steps.ecs.outputs.cluster }}
+          IMAGE_URI: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+        run: |
+          set -euo pipefail
+
+          TASK_DEF_ARN="$(aws ecs describe-services \
+            --region "$AWS_REGION" \
+            --cluster "$CLUSTER_ARN" \
+            --services "$ECS_SERVICE" \
+            --query 'services[0].taskDefinition' \
+            --output text)"
+
+          aws ecs describe-task-definition \
+            --region "$AWS_REGION" \
+            --task-definition "$TASK_DEF_ARN" \
+            --query 'taskDefinition' > task-definition.json
+
+          jq --arg IMAGE "$IMAGE_URI" '
+            del(
+              .taskDefinitionArn,
+              .revision,
+              .status,
+              .requiresAttributes,
+              .compatibilities,
+              .registeredAt,
+              .registeredBy
+            )
+            | .containerDefinitions[0].image = $IMAGE
+          ' task-definition.json > new-task-definition.json
+
+          NEW_TASK_DEF_ARN="$(aws ecs register-task-definition \
+            --region "$AWS_REGION" \
+            --cli-input-json file://new-task-definition.json \
+            --query 'taskDefinition.taskDefinitionArn' \
+            --output text)"
+
+          echo "Registered task definition: $NEW_TASK_DEF_ARN"
+
+          aws ecs update-service \
+            --region "$AWS_REGION" \
+            --cluster "$CLUSTER_ARN" \
+            --service "$ECS_SERVICE" \
+            --task-definition "$NEW_TASK_DEF_ARN" \
+            --force-new-deployment
+
+          echo "Waiting for Cope ECS service to stabilize..."
+          aws ecs wait services-stable \
+            --region "$AWS_REGION" \
+            --cluster "$CLUSTER_ARN" \
+            --services "$ECS_SERVICE"
+
+          echo "Cope ECS deployment is stable."
