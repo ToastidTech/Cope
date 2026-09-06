@@ -63,14 +63,16 @@ html = html.replace(
   "navigator.serviceWorker.register('./sw.js')"
 );
 
-// Improve contrast for the Cope AI/Talk screen so its chat controls and text
-// remain readable against the dark app background on mobile and desktop.
+// Improve contrast for the Cope AI/Talk screen and bottom navigation.
 const chatStyles = `<style id="cope-chat-contrast">
 #screen-talk h2 { color: var(--lav-bright) !important; text-shadow: 0 0 12px rgba(212,191,245,0.18); }
 #screen-talk input, #screen-talk textarea { color: var(--white) !important; background: var(--card) !important; border-color: rgba(184,159,216,0.28) !important; }
 #screen-talk input::placeholder, #screen-talk textarea::placeholder { color: #8585a8 !important; opacity: 1; }
 #screen-talk button { color: var(--lav-bright); }
 #screen-talk button[onclick*="send"], #screen-talk button[type="submit"] { background: rgba(184,159,216,0.18) !important; border-color: rgba(184,159,216,0.42) !important; color: var(--white) !important; }
+.bottom-nav .nav-btn .nav-label { color: #a9a9c7 !important; }
+.bottom-nav .nav-btn.active .nav-label { color: var(--lav-bright) !important; text-shadow: 0 0 8px rgba(212,191,245,0.22); }
+.bottom-nav .nav-btn[onclick*="talk"] .nav-label { color: #c7b7df !important; }
 </style>`;
 if (!html.includes('id="cope-chat-contrast"')) {
   html = html.replace('</head>', `${chatStyles}\n</head>`);
