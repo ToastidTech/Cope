@@ -52,7 +52,7 @@ jobs:
           CURRENT_TASK_DEF_ARN="$(aws ecs describe-express-gateway-service \
             --region "$AWS_REGION" \
             --service-arn "$EXPRESS_SERVICE_ARN" \
-            --query 'service.targetConfiguration.taskDefinitionArn' \
+            --query 'service.activeConfigurations[0].taskDefinitionArn' \
             --output text)"
 
           echo "Current Express task definition: $CURRENT_TASK_DEF_ARN"
