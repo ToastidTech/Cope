@@ -1,4 +1,4 @@
-const CACHE = 'cope-v23';
+const CACHE = 'cope-v24';
 const ASSETS = ['./','./index.html','./manifest.json','./lead-capture.js','./logo-192.png','./logo-512.png','./splash-logo.png'];
 
 const CHAT_CONTRAST = `<style id="cope-chat-contrast">
@@ -21,7 +21,7 @@ function enhanceHtml(response) {
       html = html.replace('</head>', `${CHAT_CONTRAST}\n</head>`);
     }
     if (!html.includes('lead-capture.js')) {
-      html = html.replace('</body>', '  <script src="./lead-capture.js" defer></script>\n</body>');
+      html = html.replace('</body>', '  <script src="./lead-capture.js?v=3" defer></script>\n</body>');
     }
     return new Response(html, {
       status: response.status,
@@ -32,7 +32,15 @@ function enhanceHtml(response) {
 }
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
+  e.waitUntil(caches.open(CACHE).then(async cache => {
+    for (const asset of ASSETS) {
+      try {
+        const response = await fetch(asset, { cache: 'no-store' });
+        const enhanced = asset.endsWith('.html') || asset === './' ? await enhanceHtml(response) : response;
+        if (enhanced && enhanced.ok) await cache.put(asset, enhanced.clone());
+      } catch (_) {}
+    }
+  }));
   self.skipWaiting();
 });
 
@@ -48,7 +56,7 @@ self.addEventListener('fetch', e => {
     return;
   }
   if (e.request.mode === 'navigate' || url.endsWith('/index.html')) {
-    e.respondWith(fetch(e.request).then(response => {
+    e.respondWith(fetch(e.request, { cache: 'no-store' }).then(response => {
       return enhanceHtml(response).then(enhanced => {
         const copy = enhanced.clone();
         caches.open(CACHE).then(c => c.put(e.request, copy));
