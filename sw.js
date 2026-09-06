@@ -1,4 +1,4 @@
-const CACHE = 'cope-v25';
+const CACHE = 'cope-v26';
 const ASSETS = ['./','./index.html','./manifest.json','./lead-capture.js','./logo-192.png','./logo-512.png','./splash-logo.png'];
 
 const CHAT_CONTRAST = `<style id="cope-chat-contrast">
@@ -51,6 +51,27 @@ const TALK_FIX = `<script>
 })();
 </script>`;
 
+const OPEN_WEEK_FIX = `<script id="cope-open-week-fix">
+(function(){
+  function isOpenWeek(){
+    var now = new Date();
+    var start = new Date('2026-09-06T00:00:00-05:00');
+    var end = new Date('2026-09-14T00:00:00-05:00');
+    return now >= start && now < end;
+  }
+  function applyOpenWeek(){
+    if(!isOpenWeek()) return;
+    window.hasAccess = function(){ return true; };
+    document.querySelectorAll('.quick-card.locked').forEach(function(card){
+      card.classList.remove('locked');
+    });
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',applyOpenWeek);
+  else applyOpenWeek();
+  new MutationObserver(applyOpenWeek).observe(document.documentElement,{childList:true,subtree:true});
+})();
+</script>`;
+
 function enhanceHtml(response) {
   if (!response || !response.ok) return response;
   const type = response.headers.get('content-type') || '';
@@ -65,6 +86,9 @@ function enhanceHtml(response) {
     }
     if (!html.includes('function fixTalk')) {
       html = html.replace('</body>', `${TALK_FIX}\n</body>`);
+    }
+    if (!html.includes('cope-open-week-fix')) {
+      html = html.replace('</body>', `${OPEN_WEEK_FIX}\n</body>`);
     }
     if (!html.includes('lead-capture.js')) {
       html = html.replace('</body>', '  <script src="./lead-capture.js?v=3" defer></script>\n</body>');
