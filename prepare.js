@@ -64,6 +64,9 @@ html = html.replace(
 );
 
 // Improve contrast for the Cope AI/Talk screen and bottom navigation.
+// Explicitly style the Talk navigation button itself because the base
+// .nav-btn uses background:none and can otherwise inherit a black/default
+// appearance on some mobile browsers.
 const chatStyles = `<style id="cope-chat-contrast">
 #screen-talk h2 { color: var(--lav-bright) !important; text-shadow: 0 0 12px rgba(212,191,245,0.18); }
 #screen-talk input, #screen-talk textarea { color: var(--white) !important; background: var(--card) !important; border-color: rgba(184,159,216,0.28) !important; }
@@ -72,9 +75,20 @@ const chatStyles = `<style id="cope-chat-contrast">
 #screen-talk button[onclick*="send"], #screen-talk button[type="submit"] { background: rgba(184,159,216,0.18) !important; border-color: rgba(184,159,216,0.42) !important; color: var(--white) !important; }
 .bottom-nav .nav-btn .nav-label { color: #a9a9c7 !important; }
 .bottom-nav .nav-btn.active .nav-label { color: var(--lav-bright) !important; text-shadow: 0 0 8px rgba(212,191,245,0.22); }
+.bottom-nav .nav-btn[onclick*="talk"] { background: rgba(184,159,216,0.10) !important; border: 1px solid rgba(184,159,216,0.32) !important; color: var(--lav-bright) !important; box-shadow: 0 0 14px rgba(184,159,216,0.10); }
+.bottom-nav .nav-btn[onclick*="talk"]:hover,
+.bottom-nav .nav-btn[onclick*="talk"]:focus,
+.bottom-nav .nav-btn[onclick*="talk"]:active,
+.bottom-nav .nav-btn[onclick*="talk"].active { background: rgba(184,159,216,0.18) !important; border-color: rgba(184,159,216,0.50) !important; color: var(--lav-bright) !important; }
+.bottom-nav .nav-btn[onclick*="talk"] .nav-icon { color: var(--lav-bright) !important; filter: drop-shadow(0 0 6px rgba(184,159,216,0.55)); }
 .bottom-nav .nav-btn[onclick*="talk"] .nav-label { color: #c7b7df !important; }
 </style>`;
-if (!html.includes('id="cope-chat-contrast"')) {
+
+// Replace an existing generated block so future builds actually receive
+// this fix even when index.html already contains the old style block.
+if (html.includes('id="cope-chat-contrast"')) {
+  html = html.replace(/<style id="cope-chat-contrast">[\s\S]*?<\/style>/, chatStyles);
+} else {
   html = html.replace('</head>', `${chatStyles}\n</head>`);
 }
 
