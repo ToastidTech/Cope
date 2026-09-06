@@ -13,7 +13,8 @@ permissions:
 env:
   AWS_REGION: us-west-2
   ECR_REPOSITORY: cope
-  ECS_SERVICE: Cope-service-tfpqzk7g
+  EXPRESS_SERVICE_ARN: arn:aws:ecs:us-west-2:299113402161:service/default/cope-7c1f
+  TASK_DEFINITION_FAMILY: default-cope-7c1f
 
 jobs:
   build-and-push:
@@ -42,49 +43,26 @@ jobs:
             ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
             ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
 
-      - name: Find Cope ECS cluster
-        id: ecs
-        run: |
-          set -euo pipefail
-          CLUSTER_ARN="$(
-            aws ecs list-clusters --region "$AWS_REGION" --query 'clusterArns[]' --output text |
-            tr '\t' '\n' |
-            while read -r cluster; do
-              [ -z "$cluster" ] && continue
-              service_name="$(aws ecs describe-services --region "$AWS_REGION" --cluster "$cluster" --services "$ECS_SERVICE" --query 'services[0].serviceName' --output text 2>/dev/null || true)"
-              if [ "$service_name" = "$ECS_SERVICE" ]; then
-                echo "$cluster"
-                break
-              fi
-            done
-          )"
-          if [ -z "$CLUSTER_ARN" ]; then
-            echo "Could not find ECS cluster containing $ECS_SERVICE"
-            exit 1
-          fi
-          echo "cluster=$CLUSTER_ARN" >> "$GITHUB_OUTPUT"
-          echo "Using cluster: $CLUSTER_ARN"
-
-      - name: Deploy Cope to ECS
+      - name: Prepare Express Mode task definition
         env:
-          CLUSTER_ARN: ${{ steps.ecs.outputs.cluster }}
           IMAGE_URI: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
         run: |
           set -euo pipefail
 
-          TASK_DEF_ARN="$(aws ecs describe-services \
+          CURRENT_TASK_DEF_ARN="$(aws ecs describe-express-gateway-service \
             --region "$AWS_REGION" \
-            --cluster "$CLUSTER_ARN" \
-            --services "$ECS_SERVICE" \
-            --query 'services[0].taskDefinition' \
+            --service-arn "$EXPRESS_SERVICE_ARN" \
+            --query 'service.targetConfiguration.taskDefinitionArn' \
             --output text)"
+
+          echo "Current Express task definition: $CURRENT_TASK_DEF_ARN"
 
           aws ecs describe-task-definition \
             --region "$AWS_REGION" \
-            --task-definition "$TASK_DEF_ARN" \
+            --task-definition "$CURRENT_TASK_DEF_ARN" \
             --query 'taskDefinition' > task-definition.json
 
-          jq --arg IMAGE "$IMAGE_URI" '
+          jq --arg IMAGE "$IMAGE_URI" --arg FAMILY "$TASK_DEFINITION_FAMILY" '
             del(
               .taskDefinitionArn,
               .revision,
@@ -94,8 +72,14 @@ jobs:
               .registeredAt,
               .registeredBy
             )
+            | .family = $FAMILY
             | .containerDefinitions[0].image = $IMAGE
           ' task-definition.json > new-task-definition.json
+
+      - name: Register updated task definition
+        id: task-def
+        run: |
+          set -euo pipefail
 
           NEW_TASK_DEF_ARN="$(aws ecs register-task-definition \
             --region "$AWS_REGION" \
@@ -103,19 +87,19 @@ jobs:
             --query 'taskDefinition.taskDefinitionArn' \
             --output text)"
 
+          echo "task_definition_arn=$NEW_TASK_DEF_ARN" >> "$GITHUB_OUTPUT"
           echo "Registered task definition: $NEW_TASK_DEF_ARN"
 
-          aws ecs update-service \
-            --region "$AWS_REGION" \
-            --cluster "$CLUSTER_ARN" \
-            --service "$ECS_SERVICE" \
-            --task-definition "$NEW_TASK_DEF_ARN" \
-            --force-new-deployment
+      - name: Deploy Cope to ECS Express Mode
+        env:
+          TASK_DEF_ARN: ${{ steps.task-def.outputs.task_definition_arn }}
+        run: |
+          set -euo pipefail
 
-          echo "Waiting for Cope ECS service to stabilize..."
-          aws ecs wait services-stable \
+          aws ecs update-express-gateway-service \
             --region "$AWS_REGION" \
-            --cluster "$CLUSTER_ARN" \
-            --services "$ECS_SERVICE"
+            --service-arn "$EXPRESS_SERVICE_ARN" \
+            --task-definition-arn "$TASK_DEF_ARN" \
+            --monitor-resources
 
-          echo "Cope ECS deployment is stable."
+          echo "Cope Express Mode deployment started."
