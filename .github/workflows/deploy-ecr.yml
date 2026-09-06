@@ -14,7 +14,6 @@ env:
   AWS_REGION: us-west-2
   ECR_REPOSITORY: cope
   EXPRESS_SERVICE_ARN: arn:aws:ecs:us-west-2:299113402161:service/default/cope-7c1f
-  CURRENT_TASK_DEFINITION: arn:aws:ecs:us-west-2:299113402161:task-definition/default-cope-7c1f:1
 
 jobs:
   build-and-push:
@@ -43,56 +42,19 @@ jobs:
             ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
             ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
 
-      - name: Prepare Express Mode task definition
+      - name: Deploy Cope to ECS Express Mode
         env:
           IMAGE_URI: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
         run: |
           set -euo pipefail
 
-          echo "Using current Express task definition: $CURRENT_TASK_DEFINITION"
-
-          aws ecs describe-task-definition \
-            --region "$AWS_REGION" \
-            --task-definition "$CURRENT_TASK_DEFINITION" \
-            --query 'taskDefinition' > task-definition.json
-
-          jq --arg IMAGE "$IMAGE_URI" '
-            del(
-              .taskDefinitionArn,
-              .revision,
-              .status,
-              .requiresAttributes,
-              .compatibilities,
-              .registeredAt,
-              .registeredBy
-            )
-            | .containerDefinitions[0].image = $IMAGE
-          ' task-definition.json > new-task-definition.json
-
-      - name: Register updated task definition
-        id: task-def
-        run: |
-          set -euo pipefail
-
-          NEW_TASK_DEF_ARN="$(aws ecs register-task-definition \
-            --region "$AWS_REGION" \
-            --cli-input-json file://new-task-definition.json \
-            --query 'taskDefinition.taskDefinitionArn' \
-            --output text)"
-
-          echo "task_definition_arn=$NEW_TASK_DEF_ARN" >> "$GITHUB_OUTPUT"
-          echo "Registered task definition: $NEW_TASK_DEF_ARN"
-
-      - name: Deploy Cope to ECS Express Mode
-        env:
-          TASK_DEF_ARN: ${{ steps.task-def.outputs.task_definition_arn }}
-        run: |
-          set -euo pipefail
+          echo "Deploying image: $IMAGE_URI"
+          echo "Express service: $EXPRESS_SERVICE_ARN"
 
           aws ecs update-express-gateway-service \
             --region "$AWS_REGION" \
             --service-arn "$EXPRESS_SERVICE_ARN" \
-            --task-definition-arn "$TASK_DEF_ARN" \
+            --primary-container "image=$IMAGE_URI,containerPort=80" \
             --monitor-resources
 
           echo "Cope Express Mode deployment started."
