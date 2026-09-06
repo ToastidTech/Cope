@@ -63,6 +63,19 @@ html = html.replace(
   "navigator.serviceWorker.register('./sw.js')"
 );
 
+// Improve contrast for the Cope AI/Talk screen so its chat controls and text
+// remain readable against the dark app background on mobile and desktop.
+const chatStyles = `<style id="cope-chat-contrast">
+#screen-talk h2 { color: var(--lav-bright) !important; text-shadow: 0 0 12px rgba(212,191,245,0.18); }
+#screen-talk input, #screen-talk textarea { color: var(--white) !important; background: var(--card) !important; border-color: rgba(184,159,216,0.28) !important; }
+#screen-talk input::placeholder, #screen-talk textarea::placeholder { color: #8585a8 !important; opacity: 1; }
+#screen-talk button { color: var(--lav-bright); }
+#screen-talk button[onclick*="send"], #screen-talk button[type="submit"] { background: rgba(184,159,216,0.18) !important; border-color: rgba(184,159,216,0.42) !important; color: var(--white) !important; }
+</style>`;
+if (!html.includes('id="cope-chat-contrast"')) {
+  html = html.replace('</head>', `${chatStyles}\n</head>`);
+}
+
 // Add the optional, consent-based Toastid Tech lead capture to the production build.
 const leadScript = '<script src="./lead-capture.js" defer></script>';
 if (!html.includes('lead-capture.js')) {
@@ -77,6 +90,9 @@ const manifestFile = "manifest.json";
 let manifest = JSON.parse(fs.readFileSync(manifestFile, "utf8"));
 manifest.start_url = "./";
 manifest.scope = "./";
+manifest.display = "standalone";
+manifest.display_override = ["standalone"];
+manifest.orientation = "portrait-primary";
 manifest.icons = (manifest.icons || []).map(icon => ({
   ...icon,
   src: icon.src.replace(/^\/Cope\//, "./")
