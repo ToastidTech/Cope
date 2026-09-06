@@ -49,11 +49,18 @@ jobs:
         run: |
           set -euo pipefail
 
-          CURRENT_TASK_DEF_ARN="$(aws ecs describe-express-gateway-service \
+          CURRENT_TASK_DEF_ARN="$(aws ecs list-task-definitions \
             --region "$AWS_REGION" \
-            --service-arn "$EXPRESS_SERVICE_ARN" \
-            --query 'service.activeConfigurations[0].taskDefinitionArn' \
+            --family-prefix "$TASK_DEFINITION_FAMILY" \
+            --sort DESC \
+            --max-items 1 \
+            --query 'taskDefinitionArns[0]' \
             --output text)"
+
+          if [ -z "$CURRENT_TASK_DEF_ARN" ] || [ "$CURRENT_TASK_DEF_ARN" = "None" ]; then
+            echo "Could not find task definition family: $TASK_DEFINITION_FAMILY"
+            exit 1
+          fi
 
           echo "Current Express task definition: $CURRENT_TASK_DEF_ARN"
 
