@@ -1,5 +1,35 @@
-const CACHE = 'cope-v22';
+const CACHE = 'cope-v23';
 const ASSETS = ['./','./index.html','./manifest.json','./lead-capture.js','./logo-192.png','./logo-512.png','./splash-logo.png'];
+
+const CHAT_CONTRAST = `<style id="cope-chat-contrast">
+.bottom-nav .nav-btn[onclick*="talk"] { background: rgba(184,159,216,0.10) !important; border: 1px solid rgba(184,159,216,0.32) !important; color: #d4bff5 !important; box-shadow: 0 0 14px rgba(184,159,216,0.10); }
+.bottom-nav .nav-btn[onclick*="talk"]:hover,
+.bottom-nav .nav-btn[onclick*="talk"]:focus,
+.bottom-nav .nav-btn[onclick*="talk"]:active,
+.bottom-nav .nav-btn[onclick*="talk"].active { background: rgba(184,159,216,0.18) !important; border-color: rgba(184,159,216,0.50) !important; color: #d4bff5 !important; }
+.bottom-nav .nav-btn[onclick*="talk"] .nav-icon { color: #d4bff5 !important; filter: drop-shadow(0 0 6px rgba(184,159,216,0.55)); }
+.bottom-nav .nav-btn[onclick*="talk"] .nav-label { color: #c7b7df !important; }
+</style>`;
+
+function enhanceHtml(response) {
+  if (!response || !response.ok) return response;
+  const type = response.headers.get('content-type') || '';
+  if (!type.includes('text/html')) return response;
+
+  return response.text().then(html => {
+    if (!html.includes('id="cope-chat-contrast"')) {
+      html = html.replace('</head>', `${CHAT_CONTRAST}\n</head>`);
+    }
+    if (!html.includes('lead-capture.js')) {
+      html = html.replace('</body>', '  <script src="./lead-capture.js" defer></script>\n</body>');
+    }
+    return new Response(html, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: response.headers
+    });
+  });
+}
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
@@ -19,9 +49,11 @@ self.addEventListener('fetch', e => {
   }
   if (e.request.mode === 'navigate' || url.endsWith('/index.html')) {
     e.respondWith(fetch(e.request).then(response => {
-      const copy = response.clone();
-      caches.open(CACHE).then(c => c.put(e.request, copy));
-      return response;
+      return enhanceHtml(response).then(enhanced => {
+        const copy = enhanced.clone();
+        caches.open(CACHE).then(c => c.put(e.request, copy));
+        return enhanced;
+      });
     }).catch(() => caches.match(e.request).then(r => r || caches.match('./index.html'))));
     return;
   }
