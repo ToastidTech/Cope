@@ -14,7 +14,7 @@ env:
   AWS_REGION: us-west-2
   ECR_REPOSITORY: cope
   EXPRESS_SERVICE_ARN: arn:aws:ecs:us-west-2:299113402161:service/default/cope-7c1f
-  TASK_DEFINITION_FAMILY: default-cope-7c1f
+  CURRENT_TASK_DEFINITION: arn:aws:ecs:us-west-2:299113402161:task-definition/default-cope-7c1f:1
 
 jobs:
   build-and-push:
@@ -49,27 +49,14 @@ jobs:
         run: |
           set -euo pipefail
 
-          CURRENT_TASK_DEF_ARN="$(aws ecs list-task-definitions \
-            --region "$AWS_REGION" \
-            --family-prefix "$TASK_DEFINITION_FAMILY" \
-            --sort DESC \
-            --max-items 1 \
-            --query 'taskDefinitionArns[0]' \
-            --output text)"
-
-          if [ -z "$CURRENT_TASK_DEF_ARN" ] || [ "$CURRENT_TASK_DEF_ARN" = "None" ]; then
-            echo "Could not find task definition family: $TASK_DEFINITION_FAMILY"
-            exit 1
-          fi
-
-          echo "Current Express task definition: $CURRENT_TASK_DEF_ARN"
+          echo "Using current Express task definition: $CURRENT_TASK_DEFINITION"
 
           aws ecs describe-task-definition \
             --region "$AWS_REGION" \
-            --task-definition "$CURRENT_TASK_DEF_ARN" \
+            --task-definition "$CURRENT_TASK_DEFINITION" \
             --query 'taskDefinition' > task-definition.json
 
-          jq --arg IMAGE "$IMAGE_URI" --arg FAMILY "$TASK_DEFINITION_FAMILY" '
+          jq --arg IMAGE "$IMAGE_URI" '
             del(
               .taskDefinitionArn,
               .revision,
@@ -79,7 +66,6 @@ jobs:
               .registeredAt,
               .registeredBy
             )
-            | .family = $FAMILY
             | .containerDefinitions[0].image = $IMAGE
           ' task-definition.json > new-task-definition.json
 
