@@ -1,4 +1,4 @@
-const CACHE = 'cope-v21';
+const CACHE = 'cope-v22';
 const ASSETS = ['./','./index.html','./manifest.json','./lead-capture.js','./logo-192.png','./logo-512.png','./splash-logo.png'];
 
 self.addEventListener('install', e => {
