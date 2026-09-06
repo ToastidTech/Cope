@@ -2,8 +2,8 @@
   'use strict';
 
   // Versioned keys ensure users who tested an older build get a fresh prompt.
-  const INTRO_KEY = 'copeLeadIntroShown_v2';
-  const EXIT_KEY = 'copeLeadExitShown_v2';
+  const INTRO_KEY = 'copeLeadIntroShown_v3';
+  const EXIT_KEY = 'copeLeadExitShown_v3';
   const ENDPOINT = './api/lead';
 
   function injectStyles() {
@@ -11,6 +11,18 @@
     const style = document.createElement('style');
     style.id = 'copeLeadStyles';
     style.textContent = `
+      /* Cope Talk button: explicit styling so it cannot fall back to browser-black. */
+      .bottom-nav .nav-btn[onclick*="goTo('talk')"],
+      .bottom-nav .nav-btn[onclick*="talk"] { background:rgba(184,159,216,.10)!important; border:1px solid rgba(184,159,216,.32)!important; color:#d4bff5!important; box-shadow:0 0 14px rgba(184,159,216,.10); }
+      .bottom-nav .nav-btn[onclick*="goTo('talk')"] .nav-icon,
+      .bottom-nav .nav-btn[onclick*="talk"] .nav-icon { color:#d4bff5!important; filter:drop-shadow(0 0 6px rgba(184,159,216,.55)); }
+      .bottom-nav .nav-btn[onclick*="goTo('talk')"] .nav-label,
+      .bottom-nav .nav-btn[onclick*="talk"] .nav-label { color:#c7b7df!important; }
+      .bottom-nav .nav-btn[onclick*="goTo('talk')"]:hover,
+      .bottom-nav .nav-btn[onclick*="goTo('talk')"]:focus,
+      .bottom-nav .nav-btn[onclick*="goTo('talk')"]:active,
+      .bottom-nav .nav-btn[onclick*="talk"].active { background:rgba(184,159,216,.18)!important; border-color:rgba(184,159,216,.50)!important; color:#d4bff5!important; }
+
       #copeLeadOverlay { position:fixed; inset:0; display:none; align-items:flex-end; justify-content:center; padding:16px; background:rgba(4,4,10,.84); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); z-index:9999; }
       #copeLeadOverlay.open { display:flex; }
       .cope-lead-card { width:min(100%,440px); max-height:calc(100dvh - 32px); overflow-y:auto; background:#10101e; border:1px solid rgba(184,159,216,.35); border-radius:24px; padding:22px; box-shadow:0 24px 80px rgba(0,0,0,.55); animation:copeLeadUp .25s ease-out; }
@@ -136,17 +148,12 @@
   function init() {
     injectStyles();
     injectMarkup();
-
-    // Reliable upfront capture. Mobile browsers cannot reliably paint a new modal during pagehide.
     setTimeout(() => showPrompt('intro'), 900);
 
-    // Desktop exit intent remains supported.
     document.addEventListener('mouseout', event => {
       if (event.clientY <= 4 && event.relatedTarget === null) showPrompt('exit');
     });
 
-    // If a mobile user backgrounds the app, don't try to paint during teardown.
-    // If they return before the session ends, offer the exit prompt then.
     let wasHidden = false;
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'hidden') wasHidden = true;
