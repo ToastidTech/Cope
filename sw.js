@@ -1,4 +1,4 @@
-const CACHE = 'cope-v27';
+const CACHE = 'cope-v28';
 const ASSETS = ['./','./index.html','./manifest.json','./lead-capture.js','./logo-192.png','./logo-512.png','./splash-logo.png'];
 
 const CHAT_CONTRAST = `<style id="cope-chat-contrast">
