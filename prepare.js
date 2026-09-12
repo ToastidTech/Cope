@@ -91,7 +91,7 @@ if (html.includes('access-gate.js')) {
   html = html.replace('</body>', `  ${accessScript}\n</body>`);
 }
 
-const leadScript = '<script src="./lead-capture.js?v=5" defer></script>';
+const leadScript = '<script src="./lead-capture.js?v=6" defer></script>';
 if (html.includes('lead-capture.js')) {
   html = html.replace(/<script src="\.\/lead-capture\.js\?v=\d+" defer><\/script>/, leadScript);
 } else {
@@ -113,4 +113,4 @@ manifest.icons = (manifest.icons || []).map(icon => ({
 }));
 fs.writeFileSync(manifestFile, JSON.stringify(manifest, null, 2) + "\n");
 
-console.log("Cope frontend prepared for AWS /api/cope-ai and seven-day promo access");
+console.log("Cope frontend prepared for AWS /api/cope-ai and standard 3-day trials");
