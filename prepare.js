@@ -89,7 +89,7 @@ if (!html.includes('access-gate.js')) {
   html = html.replace('</body>', `  ${accessScript}\n</body>`);
 }
 
-const leadScript = '<script src="./lead-capture.js?v=4" defer></script>';
+const leadScript = '<script src="./lead-capture.js?v=5" defer></script>';
 if (!html.includes('lead-capture.js')) {
   html = html.replace('</body>', `  ${leadScript}\n</body>`);
 }
