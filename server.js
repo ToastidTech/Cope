@@ -9,9 +9,8 @@ const RATE_LIMIT_MAX = 20;
 const requestLog = new Map();
 const LEADS_FILE = process.env.COPE_LEADS_FILE || path.join(__dirname, "data", "leads.jsonl");
 const PROMOS_FILE = process.env.COPE_PROMOS_FILE || path.join(__dirname, "data", "promos.jsonl");
-const PROMO_CODE = String(process.env.COPE_PROMO_CODE || "COPEFREE7").trim();
-const PROMO_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
-const PROMO_ISSUE_END_MS = Date.parse("2026-09-13T04:59:59.999Z");
+const RECOVERY_PROMO_CODE = String(process.env.COPE_RECOVERY_PROMO_CODE || "Copefree3day").trim().toLowerCase();
+const RECOVERY_PROMO_DURATION_MS = 3 * 24 * 60 * 60 * 1000;
 
 app.disable("x-powered-by");
 app.set("trust proxy", 1);
@@ -61,13 +60,13 @@ async function findPromoByDevice(deviceId) {
   } catch (error) { if (error.code !== "ENOENT") throw error; }
   return null;
 }
-async function activatePromo(deviceId, email) {
+async function activateRecoveryPromo(deviceId) {
   const existing = await findPromoByDevice(deviceId);
   if (existing && Number(existing.expiresAt) > Date.now()) return existing;
-  if (Date.now() > PROMO_ISSUE_END_MS) return null;
   const activatedAt = Date.now();
-  const promo = { deviceId, email, code: PROMO_CODE, activatedAt, expiresAt: activatedAt + PROMO_DURATION_MS, createdAt: new Date(activatedAt).toISOString() };
-  await savePromo(promo); return promo;
+  const promo = { deviceId, email: null, code: "Copefree3day", activatedAt, expiresAt: activatedAt + RECOVERY_PROMO_DURATION_MS, durationDays: 3, source: "recovery-code", createdAt: new Date(activatedAt).toISOString() };
+  await savePromo(promo);
+  return promo;
 }
 async function callAnthropic(body) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -83,6 +82,7 @@ async function callAnthropic(body) {
 app.options("/api/cope-ai", (req, res) => { corsHeaders(res); return res.status(204).end(); });
 app.options("/api/lead", (req, res) => { corsHeaders(res); return res.status(204).end(); });
 app.options("/api/access", (req, res) => { corsHeaders(res); return res.status(204).end(); });
+app.options("/api/promo", (req, res) => { corsHeaders(res); return res.status(204).end(); });
 app.get("/api/access", async (req, res) => {
   const deviceId = typeof req.query.deviceId === "string" ? req.query.deviceId.trim() : "";
   if (!validateDeviceId(deviceId)) return send(res, 400, { error: "Invalid device identifier." });
@@ -90,6 +90,17 @@ app.get("/api/access", async (req, res) => {
     const promo = await findPromoByDevice(deviceId); const expiresAt = promo ? Number(promo.expiresAt) : 0;
     return send(res, 200, { active: expiresAt > Date.now(), expiresAt: expiresAt || null });
   } catch (error) { console.error("Access check error:", error); return send(res, 500, { error: "Access status could not be checked." }); }
+});
+app.post("/api/promo", async (req, res) => {
+  const rate = checkRateLimit(getClientIP(req)); if (!rate.allowed) return send(res, 429, { error: "Too Many Requests", retryAfter: rate.retryAfter });
+  const code = typeof req.body?.code === "string" ? req.body.code.trim().toLowerCase() : "";
+  const deviceId = typeof req.body?.deviceId === "string" ? req.body.deviceId.trim() : "";
+  if (!validateDeviceId(deviceId)) return send(res, 400, { error: "Invalid device identifier." });
+  if (code !== RECOVERY_PROMO_CODE) return send(res, 400, { error: "That promo code is not valid." });
+  try {
+    const promo = await activateRecoveryPromo(deviceId);
+    return send(res, 200, { ok: true, promoCode: promo.code, activatedAt: promo.activatedAt, expiresAt: promo.expiresAt, durationDays: 3 });
+  } catch (error) { console.error("Recovery promo error:", error); return send(res, 500, { error: "Promo code could not be applied." }); }
 });
 app.post("/api/cope-ai", async (req, res) => {
   const rate = checkRateLimit(getClientIP(req)); if (!rate.allowed) return send(res, 429, { error: "Too Many Requests", retryAfter: rate.retryAfter });
@@ -100,12 +111,11 @@ app.post("/api/lead", async (req, res) => {
   const lead = validateLead(req.body || {});
   if (!lead) return send(res, 400, { error: "Name, valid email, and a valid device identifier are required; comment is optional and limited to 2,000 characters." });
   try {
-    const existingPromo = await findPromoByDevice(lead.deviceId);
-    const promo = await activatePromo(lead.deviceId, lead.email);
-    if (!existingPromo) await saveLead(lead);
-    if (!promo) return send(res, 200, { ok: true, promoAvailable: false, promoIssueEnded: true, message: "Your information was saved, but the Labor Day free-week promotion has ended." });
-    return send(res, 201, { ok: true, promoAvailable: true, promoCode: promo.code, activatedAt: promo.activatedAt, expiresAt: promo.expiresAt, durationDays: 7, promoIssueEndsAt: PROMO_ISSUE_END_MS });
-  } catch (error) { console.error("Lead/promo error:", error); return send(res, 500, { error: "Lead submission or promo activation could not be completed." }); }
+    const existingLead = await fs.promises.readFile(LEADS_FILE, "utf8").catch(error => error.code === "ENOENT" ? "" : Promise.reject(error));
+    const alreadySaved = existingLead.split("\n").filter(Boolean).some(row => { try { return JSON.parse(row).deviceId === lead.deviceId; } catch (_) { return false; } });
+    if (!alreadySaved) await saveLead(lead);
+    return send(res, 201, { ok: true, message: "Your information was saved." });
+  } catch (error) { console.error("Lead capture error:", error); return send(res, 500, { error: "Lead submission could not be completed." }); }
 });
 app.get("/health", (req, res) => res.status(200).json({ service: "cope-ai", status: "ok" }));
 app.use(express.static(__dirname, { extensions: ["html"] }));
