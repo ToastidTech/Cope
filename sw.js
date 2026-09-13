@@ -1,4 +1,4 @@
-const CACHE = 'cope-v38';
+const CACHE = 'cope-v39';
 const ASSETS = ['./','./index.html','./manifest.json','./lead-capture.js','./access-gate.js','./promo-policy.js','./logo-192.png','./logo-512.png','./splash-logo.png','./Copeai-logo.png'];
 
 self.addEventListener('install', e => {
