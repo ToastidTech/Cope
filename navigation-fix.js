@@ -33,7 +33,7 @@
 
       btn.onclick = function(event) {
         event.preventDefault();
-        if (target === 'breathe' || target === 'journal') {
+        if (target === 'breathing' || target === 'journal') {
           if (typeof window.hasAccess === 'function' && window.hasAccess()) window.goTo(target);
           else safeGate();
           return false;
@@ -43,7 +43,7 @@
           else safeGate();
           return false;
         }
-        window.goTo(target);
+        if (typeof window.goTo === 'function') window.goTo(target);
         return false;
       };
     });
