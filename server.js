@@ -60,11 +60,11 @@ async function findPromoByDevice(deviceId) {
   } catch (error) { if (error.code !== "ENOENT") throw error; }
   return null;
 }
-async function activateRecoveryPromo(deviceId) {
+async function activateRecoveryPromo(deviceId, email = null) {
   const existing = await findPromoByDevice(deviceId);
   if (existing && Number(existing.expiresAt) > Date.now()) return existing;
   const activatedAt = Date.now();
-  const promo = { deviceId, email: null, code: "Copefree3day", activatedAt, expiresAt: activatedAt + RECOVERY_PROMO_DURATION_MS, durationDays: 3, source: "recovery-code", createdAt: new Date(activatedAt).toISOString() };
+  const promo = { deviceId, email, code: "Copefree3day", activatedAt, expiresAt: activatedAt + RECOVERY_PROMO_DURATION_MS, durationDays: 3, source: "lead-capture", createdAt: new Date(activatedAt).toISOString() };
   await savePromo(promo);
   return promo;
 }
@@ -114,7 +114,8 @@ app.post("/api/lead", async (req, res) => {
     const existingLead = await fs.promises.readFile(LEADS_FILE, "utf8").catch(error => error.code === "ENOENT" ? "" : Promise.reject(error));
     const alreadySaved = existingLead.split("\n").filter(Boolean).some(row => { try { return JSON.parse(row).deviceId === lead.deviceId; } catch (_) { return false; } });
     if (!alreadySaved) await saveLead(lead);
-    return send(res, 201, { ok: true, message: "Your information was saved." });
+    const promo = await activateRecoveryPromo(lead.deviceId, lead.email);
+    return send(res, 201, { ok: true, message: "Your information was saved.", accessActive: true, expiresAt: promo.expiresAt, durationDays: 3 });
   } catch (error) { console.error("Lead capture error:", error); return send(res, 500, { error: "Lead submission could not be completed." }); }
 });
 app.get("/health", (req, res) => res.status(200).json({ service: "cope-ai", status: "ok" }));
