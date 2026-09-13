@@ -241,9 +241,9 @@
     const bundle = document.getElementById('plan-bundle');
     if (standalone) {
       const price = standalone.querySelector('div[style*="font-size:1.8rem"]');
-      if (price) price.textContent = '$9.99';
+      if (price && price.textContent !== '$9.99') price.textContent = '$9.99';
       const meta = standalone.querySelector('div[style*="letter-spacing:2px"]');
-      if (meta) meta.textContent = '/ MONTH · COPE';
+      if (meta && meta.textContent !== '/ MONTH · COPE') meta.textContent = '/ MONTH · COPE';
       const desc = Array.from(standalone.querySelectorAll('div')).find(el => /12\.99|Cope/i.test(el.textContent) && el !== price && el !== meta && el.children.length === 0);
       if (desc && !/9\.99/.test(desc.textContent)) desc.textContent = 'Standard Cope Features · 3-Day Free Trial';
       if (!standalone.querySelector('.cope-paypal-wrap')) {
@@ -256,9 +256,9 @@
     }
     if (bundle) {
       const price = bundle.querySelector('div[style*="font-size:1.8rem"]');
-      if (price) price.textContent = '$19.99';
+      if (price && price.textContent !== '$19.99') price.textContent = '$19.99';
       const meta = bundle.querySelector('div[style*="letter-spacing:2px"]');
-      if (meta) meta.textContent = '/ MONTH · COPEAI';
+      if (meta && meta.textContent !== '/ MONTH · COPEAI') meta.textContent = '/ MONTH · COPEAI';
       if (!bundle.querySelector('.cope-paypal-wrap')) {
         const wrap = document.createElement('div');
         wrap.className = 'cope-paypal-wrap';
