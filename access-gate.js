@@ -42,10 +42,12 @@
     if (!Number.isFinite(expires) || expires <= Date.now()) {
       localStorage.removeItem(ACCESS_KEY);
       localStorage.removeItem(EXPIRES_KEY);
+      localStorage.removeItem('copeAccess');
       return false;
     }
     localStorage.setItem(ACCESS_KEY, 'true');
     localStorage.setItem(EXPIRES_KEY, String(expires));
+    localStorage.setItem('copeAccess', 'true');
     return true;
   }
 
@@ -135,12 +137,14 @@
       localStorage.setItem(MASTER_KEY, 'true');
       localStorage.setItem(ACCESS_KEY, 'true');
       localStorage.setItem(AI_ACCESS_KEY, 'true');
+      localStorage.setItem('copeAccess', 'true');
       localStorage.removeItem(EXPIRES_KEY);
       localStorage.removeItem(AI_EXPIRES_KEY);
     } else {
       localStorage.removeItem(MASTER_KEY);
       localStorage.removeItem(ACCESS_KEY);
       localStorage.removeItem(AI_ACCESS_KEY);
+      localStorage.removeItem('copeAccess');
     }
     syncLocks(Boolean(active));
     notifyAccessChanged();
@@ -192,6 +196,7 @@
         localStorage.setItem(MASTER_KEY, 'true');
         localStorage.setItem(ACCESS_KEY, 'true');
         localStorage.setItem(AI_ACCESS_KEY, 'true');
+        localStorage.setItem('copeAccess', 'true');
         localStorage.removeItem(EXPIRES_KEY);
         localStorage.removeItem(AI_EXPIRES_KEY);
       } else {
