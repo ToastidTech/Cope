@@ -172,6 +172,10 @@
     }
     if (typeof window.copeShowLeadPrompt === 'function') {
       window.copeShowLeadPrompt('gate');
+      setTimeout(() => {
+        const overlay = document.getElementById('copeLeadOverlay');
+        if (!overlay && typeof original === 'function') original(defaultPlan);
+      }, 150);
       return;
     }
     if (typeof original === 'function') original(defaultPlan);
@@ -224,6 +228,11 @@
     setInterval(() => {
       if (!isLocallyActive() && localStorage.getItem(CAPTURED_KEY) === 'true') refreshAccess();
     }, 3000);
+    setTimeout(() => {
+      if (!isLocallyActive() && localStorage.getItem(CAPTURED_KEY) !== 'true' && localStorage.getItem('copeLeadIntroShown_v6') !== '1' && typeof window.copeShowLeadPrompt === 'function') {
+        window.copeShowLeadPrompt('intro');
+      }
+    }, 900);
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
