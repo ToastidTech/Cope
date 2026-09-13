@@ -67,6 +67,7 @@
     const style = document.createElement('style');
     style.id = 'cope-access-talk-contrast';
     style.textContent = `
+      .bottom-nav .nav-btn { position:relative; }
       .bottom-nav .nav-btn[onclick*="talk"] { -webkit-appearance:none !important; appearance:none !important; background:rgba(184,159,216,.10) !important; border:1px solid rgba(184,159,216,.32) !important; color:#d4bff5 !important; box-shadow:0 0 14px rgba(184,159,216,.10) !important; }
       .bottom-nav .nav-btn[onclick*="talk"] .nav-icon { color:#d4bff5 !important; filter:drop-shadow(0 0 6px rgba(184,159,216,.55)) !important; }
       .bottom-nav .nav-btn[onclick*="talk"] .nav-label { color:#c7b7df !important; }
