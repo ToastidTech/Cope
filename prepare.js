@@ -49,7 +49,7 @@ html = html.replace(
     })
     .catch(function(err) {
       console.error('Cope AI error:', err);
-      onError('⚠️ ' + err.message + '\n\nPlease try again in a moment.');
+      onError('⚠️ ' + err.message + '\\n\\nPlease try again in a moment.');
     });
   }
   
