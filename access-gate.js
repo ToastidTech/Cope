@@ -4,6 +4,7 @@
   const DEVICE_KEY = 'copePromoDeviceId_v1';
   const ACCESS_KEY = 'copePromoAccess_v1';
   const EXPIRES_KEY = 'copePromoExpiresAt_v1';
+  const CAPTURED_KEY = 'copeLeadCaptured_v3';
 
   function getDeviceId() {
     let id = localStorage.getItem(DEVICE_KEY);
@@ -51,9 +52,6 @@
     `;
     (document.head || document.documentElement).appendChild(style);
 
-    // Final DOM-level override for the Talk navigation control.
-    // This intentionally bypasses browser/user-agent button styling and any
-    // competing stylesheet so the Talk control cannot render as a black button.
     const talkButton = Array.from(document.querySelectorAll('.bottom-nav .nav-btn')).find(btn => {
       const label = btn.querySelector('.nav-label');
       return label && label.textContent.trim().toLowerCase() === 'talk';
@@ -109,11 +107,15 @@
 
   function showGate(defaultPlan) {
     if (isLocallyActive()) return;
+    const original = window.__copeOriginalOpenPaywall;
+    if (localStorage.getItem(CAPTURED_KEY) === 'true' && typeof original === 'function') {
+      original(defaultPlan);
+      return;
+    }
     if (typeof window.copeShowLeadPrompt === 'function') {
       window.copeShowLeadPrompt('gate');
       return;
     }
-    const original = window.__copeOriginalOpenPaywall;
     if (typeof original === 'function') original(defaultPlan);
   }
 
@@ -147,6 +149,9 @@
     syncLocks(isLocallyActive());
     refreshAccess();
     setInterval(refreshAccess, 5 * 60 * 1000);
+    setInterval(() => {
+      if (!isLocallyActive() && localStorage.getItem(CAPTURED_KEY) === 'true') refreshAccess();
+    }, 3000);
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
