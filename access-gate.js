@@ -4,6 +4,9 @@
   const DEVICE_KEY = 'copePromoDeviceId_v1';
   const ACCESS_KEY = 'copePromoAccess_v1';
   const EXPIRES_KEY = 'copePromoExpiresAt_v1';
+  const MASTER_KEY = 'copeMasterAccess_v1';
+  const AI_ACCESS_KEY = 'copeAIAccess';
+  const AI_EXPIRES_KEY = 'copeAIAccessExpiresAt_v1';
   const CAPTURED_KEY = 'copeLeadCaptured_v3';
 
   function getDeviceId() {
@@ -15,13 +18,26 @@
     return id;
   }
 
+  function isMasterActive() {
+    return localStorage.getItem(MASTER_KEY) === 'true';
+  }
+
   function isLocallyActive() {
+    if (isMasterActive()) return true;
     const active = localStorage.getItem(ACCESS_KEY) === 'true';
     const expiresAt = Number(localStorage.getItem(EXPIRES_KEY) || 0);
     return active && expiresAt > Date.now();
   }
 
+  function isLocalAIAccessActive() {
+    if (isMasterActive()) return true;
+    const active = localStorage.getItem(AI_ACCESS_KEY) === 'true';
+    const expiresAt = Number(localStorage.getItem(AI_EXPIRES_KEY) || 0);
+    return active && expiresAt > Date.now();
+  }
+
   function setAccess(expiresAt) {
+    if (isMasterActive()) return true;
     const expires = new Date(expiresAt).getTime();
     if (!Number.isFinite(expires) || expires <= Date.now()) {
       localStorage.removeItem(ACCESS_KEY);
@@ -30,6 +46,19 @@
     }
     localStorage.setItem(ACCESS_KEY, 'true');
     localStorage.setItem(EXPIRES_KEY, String(expires));
+    return true;
+  }
+
+  function setAIAccess(expiresAt) {
+    if (isMasterActive()) return true;
+    const expires = new Date(expiresAt).getTime();
+    if (!Number.isFinite(expires) || expires <= Date.now()) {
+      localStorage.removeItem(AI_ACCESS_KEY);
+      localStorage.removeItem(AI_EXPIRES_KEY);
+      return false;
+    }
+    localStorage.setItem(AI_ACCESS_KEY, 'true');
+    localStorage.setItem(AI_EXPIRES_KEY, String(expires));
     return true;
   }
 
@@ -84,7 +113,10 @@
     window.dispatchEvent(new CustomEvent('copeaccesschange', {
       detail: {
         active: isLocallyActive(),
-        expiresAt: localStorage.getItem(EXPIRES_KEY) || null
+        aiActive: isLocalAIAccessActive(),
+        master: isMasterActive(),
+        expiresAt: localStorage.getItem(EXPIRES_KEY) || null,
+        aiExpiresAt: localStorage.getItem(AI_EXPIRES_KEY) || null
       }
     }));
   }
@@ -97,12 +129,33 @@
     notifyAccessChanged();
     return active;
   };
+  window.copeSetMasterAccess = function (active) {
+    if (active) {
+      localStorage.setItem(MASTER_KEY, 'true');
+      localStorage.setItem(ACCESS_KEY, 'true');
+      localStorage.setItem(AI_ACCESS_KEY, 'true');
+      localStorage.removeItem(EXPIRES_KEY);
+      localStorage.removeItem(AI_EXPIRES_KEY);
+    } else {
+      localStorage.removeItem(MASTER_KEY);
+      localStorage.removeItem(ACCESS_KEY);
+      localStorage.removeItem(AI_ACCESS_KEY);
+    }
+    syncLocks(Boolean(active));
+    notifyAccessChanged();
+    return Boolean(active);
+  };
+  window.copeSetAIAccess = function (expiresAt) {
+    const active = setAIAccess(expiresAt);
+    notifyAccessChanged();
+    return active;
+  };
 
   window.hasAccess = function () {
     return isLocallyActive();
   };
   window.hasAIAccess = function () {
-    return isLocallyActive();
+    return isLocalAIAccessActive();
   };
 
   function showGate(defaultPlan) {
@@ -133,9 +186,22 @@
       });
       if (!response.ok) throw new Error('Access check failed: ' + response.status);
       const data = await response.json();
-      const active = data.active && setAccess(data.expiresAt);
-      if (!active) setAccess(null);
-      syncLocks(Boolean(active));
+
+      if (data.master) {
+        localStorage.setItem(MASTER_KEY, 'true');
+        localStorage.setItem(ACCESS_KEY, 'true');
+        localStorage.setItem(AI_ACCESS_KEY, 'true');
+        localStorage.removeItem(EXPIRES_KEY);
+        localStorage.removeItem(AI_EXPIRES_KEY);
+      } else {
+        localStorage.removeItem(MASTER_KEY);
+        if (data.active && data.expiresAt) setAccess(data.expiresAt);
+        else setAccess(null);
+        if (data.aiActive && data.aiExpiresAt) setAIAccess(data.aiExpiresAt);
+        else if (!data.aiActive) setAIAccess(null);
+      }
+
+      syncLocks(isLocallyActive());
       notifyAccessChanged();
     } catch (error) {
       const active = isLocallyActive();
