@@ -245,7 +245,7 @@
       const meta = standalone.querySelector('div[style*="letter-spacing:2px"]');
       if (meta && meta.textContent !== '/ MONTH · COPE') meta.textContent = '/ MONTH · COPE';
       const desc = Array.from(standalone.querySelectorAll('div')).find(el => /12\.99|Cope/i.test(el.textContent) && el !== price && el !== meta && el.children.length === 0);
-      if (desc && !/9\.99/.test(desc.textContent)) desc.textContent = 'Standard Cope Features · 3-Day Free Trial';
+      if (desc && desc.textContent !== 'Standard Cope Features · 3-Day Free Trial') desc.textContent = 'Standard Cope Features · 3-Day Free Trial';
       if (!standalone.querySelector('.cope-paypal-wrap')) {
         const wrap = document.createElement('div');
         wrap.className = 'cope-paypal-wrap';
