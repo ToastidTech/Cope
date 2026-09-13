@@ -105,7 +105,7 @@ if (html.includes('promo-policy.js')) {
   html = html.replace('</body>', `  ${promoScript}\n</body>`);
 }
 
-const navigationFixScript = '<script src="./navigation-fix.js?v=2" defer></script>';
+const navigationFixScript = '<script src="./navigation-fix.js?v=3" defer></script>';
 if (html.includes('navigation-fix.js')) {
   html = html.replace(/<script src="\.\/navigation-fix\.js\?v=\d+" defer><\/script>/, navigationFixScript);
 } else {
