@@ -77,6 +77,8 @@
   };
 
   function init() {
+    const recovery = document.querySelector('.cope-recovery');
+    if (recovery) recovery.remove();
     const row = document.getElementById('confirmRow');
     if (row) row.style.display = '';
   }
