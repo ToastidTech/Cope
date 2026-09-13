@@ -9,8 +9,9 @@ const RATE_LIMIT_MAX = 20;
 const requestLog = new Map();
 const LEADS_FILE = process.env.COPE_LEADS_FILE || path.join(__dirname, "data", "leads.jsonl");
 const PROMOS_FILE = process.env.COPE_PROMOS_FILE || path.join(__dirname, "data", "promos.jsonl");
-const RECOVERY_PROMO_CODE = String(process.env.COPE_RECOVERY_PROMO_CODE || "Copefree3day").trim().toLowerCase();
-const RECOVERY_PROMO_DURATION_MS = 3 * 24 * 60 * 60 * 1000;
+const MASTER_PROMO_CODE = String(process.env.COPE_MASTER_PROMO_CODE || "TST2026").trim().toLowerCase();
+const AI_PROMO_CODE = String(process.env.COPE_AI_PROMO_CODE || "COPEAI3DAY").trim().toLowerCase();
+const TRIAL_DURATION_MS = 3 * 24 * 60 * 60 * 1000;
 
 app.disable("x-powered-by");
 app.set("trust proxy", 1);
@@ -53,20 +54,62 @@ function validateDeviceId(deviceId) { return typeof deviceId === "string" && /^[
 async function appendJsonLine(file, value) { await fs.promises.mkdir(path.dirname(file), { recursive: true }); await fs.promises.appendFile(file, JSON.stringify(value) + "\n", "utf8"); }
 async function saveLead(lead) { await appendJsonLine(LEADS_FILE, lead); }
 async function savePromo(promo) { await appendJsonLine(PROMOS_FILE, promo); }
-async function findPromoByDevice(deviceId) {
+async function readPromosByDevice(deviceId) {
+  const rows = [];
   try {
-    const text = await fs.promises.readFile(PROMOS_FILE, "utf8"); const rows = text.split("\n").filter(Boolean);
-    for (let i = rows.length - 1; i >= 0; i--) { try { const row = JSON.parse(rows[i]); if (row.deviceId === deviceId) return row; } catch (_) {} }
+    const text = await fs.promises.readFile(PROMOS_FILE, "utf8");
+    for (const line of text.split("\n").filter(Boolean)) {
+      try {
+        const row = JSON.parse(line);
+        if (row.deviceId === deviceId) rows.push(row);
+      } catch (_) {}
+    }
   } catch (error) { if (error.code !== "ENOENT") throw error; }
+  return rows;
+}
+async function findLeadTrialByDevice(deviceId) {
+  const rows = await readPromosByDevice(deviceId);
+  for (let i = rows.length - 1; i >= 0; i--) {
+    if (rows[i].scope === "standard" && Number(rows[i].expiresAt) > 0) return rows[i];
+  }
   return null;
 }
-async function activateRecoveryPromo(deviceId, email = null) {
-  const existing = await findPromoByDevice(deviceId);
+async function activateLeadTrial(deviceId, email = null) {
+  const existing = await findLeadTrialByDevice(deviceId);
   if (existing && Number(existing.expiresAt) > Date.now()) return existing;
   const activatedAt = Date.now();
-  const promo = { deviceId, email, code: "Copefree3day", activatedAt, expiresAt: activatedAt + RECOVERY_PROMO_DURATION_MS, durationDays: 3, source: "lead-capture", createdAt: new Date(activatedAt).toISOString() };
+  const promo = { deviceId, email, code: "lead-capture", activatedAt, expiresAt: activatedAt + TRIAL_DURATION_MS, durationDays: 3, scope: "standard", source: "lead-capture", createdAt: new Date(activatedAt).toISOString() };
   await savePromo(promo);
   return promo;
+}
+async function activateCode(deviceId, code) {
+  const now = Date.now();
+  const rows = await readPromosByDevice(deviceId);
+
+  if (code === MASTER_PROMO_CODE) {
+    const existing = rows.find(row => row.scope === "master");
+    if (existing) return existing;
+    const promo = { deviceId, code: MASTER_PROMO_CODE, scope: "master", activatedAt: now, expiresAt: null, durationDays: null, source: "promo-code", createdAt: new Date(now).toISOString() };
+    await savePromo(promo);
+    return promo;
+  }
+
+  if (code === AI_PROMO_CODE) {
+    const existing = rows.find(row => row.scope === "ai" && Number(row.expiresAt) > now);
+    if (existing) return existing;
+    const promo = { deviceId, code: AI_PROMO_CODE, scope: "ai", activatedAt: now, expiresAt: now + TRIAL_DURATION_MS, durationDays: 3, source: "promo-code", createdAt: new Date(now).toISOString() };
+    await savePromo(promo);
+    return promo;
+  }
+
+  return null;
+}
+async function getAccessState(deviceId) {
+  const rows = await readPromosByDevice(deviceId);
+  const master = rows.some(row => row.scope === "master");
+  const standard = rows.some(row => row.scope === "standard" && Number(row.expiresAt) > Date.now());
+  const ai = rows.some(row => row.scope === "ai" && Number(row.expiresAt) > Date.now());
+  return { master, standard: master || standard, ai: master || ai };
 }
 async function callAnthropic(body) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -87,8 +130,17 @@ app.get("/api/access", async (req, res) => {
   const deviceId = typeof req.query.deviceId === "string" ? req.query.deviceId.trim() : "";
   if (!validateDeviceId(deviceId)) return send(res, 400, { error: "Invalid device identifier." });
   try {
-    const promo = await findPromoByDevice(deviceId); const expiresAt = promo ? Number(promo.expiresAt) : 0;
-    return send(res, 200, { active: expiresAt > Date.now(), expiresAt: expiresAt || null });
+    const access = await getAccessState(deviceId);
+    const trialRows = await readPromosByDevice(deviceId);
+    const standardTrial = trialRows.filter(row => row.scope === "standard" && Number(row.expiresAt) > Date.now()).sort((a,b) => Number(b.expiresAt) - Number(a.expiresAt))[0];
+    const aiTrial = trialRows.filter(row => row.scope === "ai" && Number(row.expiresAt) > Date.now()).sort((a,b) => Number(b.expiresAt) - Number(a.expiresAt))[0];
+    return send(res, 200, {
+      active: access.standard,
+      aiActive: access.ai,
+      master: access.master,
+      expiresAt: access.master ? null : (standardTrial ? Number(standardTrial.expiresAt) : null),
+      aiExpiresAt: access.master ? null : (aiTrial ? Number(aiTrial.expiresAt) : null)
+    });
   } catch (error) { console.error("Access check error:", error); return send(res, 500, { error: "Access status could not be checked." }); }
 });
 app.post("/api/promo", async (req, res) => {
@@ -96,11 +148,11 @@ app.post("/api/promo", async (req, res) => {
   const code = typeof req.body?.code === "string" ? req.body.code.trim().toLowerCase() : "";
   const deviceId = typeof req.body?.deviceId === "string" ? req.body.deviceId.trim() : "";
   if (!validateDeviceId(deviceId)) return send(res, 400, { error: "Invalid device identifier." });
-  if (code !== RECOVERY_PROMO_CODE) return send(res, 400, { error: "That promo code is not valid." });
   try {
-    const promo = await activateRecoveryPromo(deviceId);
-    return send(res, 200, { ok: true, promoCode: promo.code, activatedAt: promo.activatedAt, expiresAt: promo.expiresAt, durationDays: 3 });
-  } catch (error) { console.error("Recovery promo error:", error); return send(res, 500, { error: "Promo code could not be applied." }); }
+    const promo = await activateCode(deviceId, code);
+    if (!promo) return send(res, 400, { error: "That promo code is not valid." });
+    return send(res, 200, { ok: true, scope: promo.scope, promoCode: promo.code, activatedAt: promo.activatedAt, expiresAt: promo.expiresAt, durationDays: promo.durationDays });
+  } catch (error) { console.error("Promo error:", error); return send(res, 500, { error: "Promo code could not be applied." }); }
 });
 app.post("/api/cope-ai", async (req, res) => {
   const rate = checkRateLimit(getClientIP(req)); if (!rate.allowed) return send(res, 429, { error: "Too Many Requests", retryAfter: rate.retryAfter });
@@ -114,7 +166,7 @@ app.post("/api/lead", async (req, res) => {
     const existingLead = await fs.promises.readFile(LEADS_FILE, "utf8").catch(error => error.code === "ENOENT" ? "" : Promise.reject(error));
     const alreadySaved = existingLead.split("\n").filter(Boolean).some(row => { try { return JSON.parse(row).deviceId === lead.deviceId; } catch (_) { return false; } });
     if (!alreadySaved) await saveLead(lead);
-    const promo = await activateRecoveryPromo(lead.deviceId, lead.email);
+    const promo = await activateLeadTrial(lead.deviceId, lead.email);
     return send(res, 201, { ok: true, message: "Your information was saved.", accessActive: true, expiresAt: promo.expiresAt, durationDays: 3 });
   } catch (error) { console.error("Lead capture error:", error); return send(res, 500, { error: "Lead submission could not be completed." }); }
 });
