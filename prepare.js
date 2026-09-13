@@ -84,28 +84,28 @@ if (html.includes('id="cope-chat-contrast"')) {
   html = html.replace('</head>', `${chatStyles}\n</head>`);
 }
 
-const accessScript = '<script src="./access-gate.js?v=2" defer></script>';
+const accessScript = '<script src="./access-gate.js?v=3" defer></script>';
 if (html.includes('access-gate.js')) {
   html = html.replace(/<script src="\.\/access-gate\.js\?v=\d+" defer><\/script>/, accessScript);
 } else {
   html = html.replace('</body>', `  ${accessScript}\n</body>`);
 }
 
-const leadScript = '<script src="./lead-capture.js?v=6" defer></script>';
+const leadScript = '<script src="./lead-capture.js?v=7" defer></script>';
 if (html.includes('lead-capture.js')) {
   html = html.replace(/<script src="\.\/lead-capture\.js\?v=\d+" defer><\/script>/, leadScript);
 } else {
   html = html.replace('</body>', `  ${leadScript}\n</body>`);
 }
 
-const promoScript = '<script src="./promo-policy.js?v=1" defer></script>';
+const promoScript = '<script src="./promo-policy.js?v=2" defer></script>';
 if (html.includes('promo-policy.js')) {
   html = html.replace(/<script src="\.\/promo-policy\.js\?v=\d+" defer><\/script>/, promoScript);
 } else {
   html = html.replace('</body>', `  ${promoScript}\n</body>`);
 }
 
-const navigationFixScript = '<script src="./navigation-fix.js?v=1" defer></script>';
+const navigationFixScript = '<script src="./navigation-fix.js?v=2" defer></script>';
 if (html.includes('navigation-fix.js')) {
   html = html.replace(/<script src="\.\/navigation-fix\.js\?v=\d+" defer><\/script>/, navigationFixScript);
 } else {
