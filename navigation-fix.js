@@ -15,58 +15,73 @@
       window.openPaywall('standalone');
       return true;
     }
-    return true;
+    return false;
   }
 
-  function bind() {
-    document.querySelectorAll('.bottom-nav .nav-btn').forEach(btn => {
-      const label = (btn.querySelector('.nav-label')?.textContent || '').trim().toLowerCase();
-      const target = {
-        home: 'home',
-        breathe: 'breathing',
-        journal: 'journal',
-        asmr: 'asmr',
-        talk: 'talk',
-        help: 'crisis'
-      }[label];
-      if (!target) return;
+  function route(target, requiresAI) {
+    if (requiresAI) {
+      if (typeof window.hasAIAccess === 'function' && window.hasAIAccess()) {
+        window.goTo(target);
+      } else {
+        safeGate();
+      }
+      return;
+    }
 
-      btn.onclick = function(event) {
-        event.preventDefault();
-        if (target === 'breathing' || target === 'journal') {
-          if (typeof window.hasAccess === 'function' && window.hasAccess()) window.goTo(target);
-          else safeGate();
-          return false;
-        }
-        if (target === 'talk') {
-          if (typeof window.hasAIAccess === 'function' && window.hasAIAccess()) window.goTo(target);
-          else safeGate();
-          return false;
-        }
-        if (typeof window.goTo === 'function') window.goTo(target);
-        return false;
-      };
-    });
+    if (target === 'breathing' || target === 'journal' || target === 'sleep') {
+      if (typeof window.hasAccess === 'function' && window.hasAccess()) {
+        window.goTo(target);
+      } else {
+        safeGate();
+      }
+      return;
+    }
 
-    document.querySelectorAll('.quick-card').forEach(card => {
-      const title = (card.querySelector('.qc-title')?.textContent || '').trim().toLowerCase();
-      const target = { breathe:'breathing', journal:'journal', affirm:'home', sleep:'sleep' }[title];
-      if (!target) return;
-      card.onclick = function(event) {
-        event.preventDefault();
-        if (typeof window.hasAccess === 'function' && window.hasAccess()) window.goTo(target);
-        else safeGate();
-        return false;
-      };
-    });
+    window.goTo(target);
+  }
+
+  function getNavTarget(btn) {
+    const label = (btn.querySelector('.nav-label')?.textContent || '').trim().toLowerCase();
+    return {
+      home: 'home',
+      breathe: 'breathing',
+      journal: 'journal',
+      asmr: 'asmr',
+      talk: 'talk',
+      help: 'crisis'
+    }[label] || null;
+  }
+
+  function getCardTarget(card) {
+    const title = (card.querySelector('.qc-title')?.textContent || '').trim().toLowerCase();
+    return {
+      breathe: 'breathing',
+      journal: 'journal',
+      affirm: 'home',
+      sleep: 'sleep'
+    }[title] || null;
+  }
+
+  function handleClick(event) {
+    const nav = event.target.closest?.('.bottom-nav .nav-btn');
+    const card = event.target.closest?.('.quick-card');
+    if (!nav && !card) return;
+
+    const target = nav ? getNavTarget(nav) : getCardTarget(card);
+    if (!target) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    route(target, target === 'talk');
   }
 
   function init() {
-    bind();
-    setTimeout(bind, 250);
-    setTimeout(bind, 1000);
+    document.addEventListener('click', handleClick, true);
   }
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once:true });
-  else init();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init, { once: true });
+  } else {
+    init();
+  }
 })();
