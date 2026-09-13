@@ -49,7 +49,7 @@ html = html.replace(
     })
     .catch(function(err) {
       console.error('Cope AI error:', err);
-      onError('⚠️ ' + err.message + '\\n\\nPlease try again in a moment.');
+      onError('⚠️ ' + err.message + '\n\nPlease try again in a moment.');
     });
   }
   
@@ -103,6 +103,13 @@ if (html.includes('promo-policy.js')) {
   html = html.replace(/<script src="\.\/promo-policy\.js\?v=\d+" defer><\/script>/, promoScript);
 } else {
   html = html.replace('</body>', `  ${promoScript}\n</body>`);
+}
+
+const navigationFixScript = '<script src="./navigation-fix.js?v=1" defer></script>';
+if (html.includes('navigation-fix.js')) {
+  html = html.replace(/<script src="\.\/navigation-fix\.js\?v=\d+" defer><\/script>/, navigationFixScript);
+} else {
+  html = html.replace('</body>', `  ${navigationFixScript}\n</body>`);
 }
 
 fs.writeFileSync(file, html);
