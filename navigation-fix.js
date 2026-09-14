@@ -1,18 +1,24 @@
 (() => {
   'use strict';
 
-  function safeGate() {
-    if (typeof window.hasAccess === 'function' && window.hasAccess()) return false;
+  function safeGate(defaultPlan = 'standalone') {
+    if (typeof window.hasAccess === 'function' && window.hasAccess()) {
+      if (typeof window.__copeOriginalOpenPaywall === 'function') {
+        window.__copeOriginalOpenPaywall(defaultPlan);
+        return true;
+      }
+      return false;
+    }
     if (typeof window.copeShowLeadPrompt === 'function') {
-      window.copeShowLeadPrompt('gate');
+      window.copeShowLeadPrompt('gate', true);
       return true;
     }
     if (typeof window.__copeOriginalOpenPaywall === 'function') {
-      window.__copeOriginalOpenPaywall('standalone');
+      window.__copeOriginalOpenPaywall(defaultPlan);
       return true;
     }
     if (typeof window.openPaywall === 'function') {
-      window.openPaywall('standalone');
+      window.openPaywall(defaultPlan);
       return true;
     }
     return false;
@@ -23,7 +29,7 @@
       if (typeof window.hasAIAccess === 'function' && window.hasAIAccess()) {
         window.goTo(target);
       } else {
-        safeGate();
+        safeGate('standalone');
       }
       return;
     }
@@ -32,7 +38,7 @@
       if (typeof window.hasAccess === 'function' && window.hasAccess()) {
         window.goTo(target);
       } else {
-        safeGate();
+        safeGate('standalone');
       }
       return;
     }
