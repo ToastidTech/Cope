@@ -78,10 +78,7 @@
   };
 
   function init() {
-    // The floating promo-code bubble was intentionally removed.
-    // Keep the Home promo-code box and window.applyPromo() intact.
-    const recovery = document.querySelector('.cope-recovery');
-    if (recovery) recovery.remove();
+    // Keep the Home promo-code section. Only the separate floating promo bubble was retired.
     const row = document.getElementById('confirmRow');
     if (row) row.style.display = '';
   }
