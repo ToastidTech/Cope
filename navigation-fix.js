@@ -8,6 +8,47 @@
     });
   }
 
+  function syncTalkVisualState(activeTarget) {
+    const talk = Array.from(document.querySelectorAll('.bottom-nav .nav-btn')).find(btn =>
+      (btn.querySelector('.nav-label')?.textContent || '').trim().toLowerCase() === 'talk'
+    );
+    if (!talk) return;
+
+    talk.style.setProperty('position', 'relative', 'important');
+
+    const icon = talk.querySelector('.nav-icon');
+    const label = talk.querySelector('.nav-label');
+    const lock = document.getElementById('talkNavLock');
+    const isTalk = activeTarget === 'talk';
+
+    if (!isTalk) {
+      talk.classList.remove('active');
+      talk.style.setProperty('background', 'none', 'important');
+      talk.style.setProperty('border', 'none', 'important');
+      talk.style.setProperty('box-shadow', 'none', 'important');
+      if (icon) {
+        icon.style.setProperty('color', 'var(--white)', 'important');
+        icon.style.setProperty('filter', 'none', 'important');
+      }
+      if (label) label.style.setProperty('color', 'var(--text)', 'important');
+    } else {
+      talk.style.removeProperty('background');
+      talk.style.removeProperty('border');
+      talk.style.removeProperty('box-shadow');
+      if (icon) {
+        icon.style.removeProperty('color');
+        icon.style.removeProperty('filter');
+      }
+      if (label) label.style.removeProperty('color');
+    }
+
+    if (lock) lock.style.display = hasAIAccessSafe() ? 'none' : 'block';
+  }
+
+  function hasAIAccessSafe() {
+    return typeof window.hasAIAccess === 'function' && window.hasAIAccess();
+  }
+
   function clearHelpLockState() {
     document.querySelectorAll('.bottom-nav .nav-btn').forEach(btn => {
       const label = (btn.querySelector('.nav-label')?.textContent || '').trim().toLowerCase();
@@ -23,6 +64,7 @@
   function safeGate(defaultPlan = 'standalone') {
     clearTalkActiveState();
     clearHelpLockState();
+    syncTalkVisualState('home');
     if (typeof window.hasAccess === 'function' && window.hasAccess()) {
       if (typeof window.__copeOriginalOpenPaywall === 'function') {
         window.__copeOriginalOpenPaywall(defaultPlan);
@@ -49,12 +91,14 @@
     if (target === 'crisis') {
       clearHelpLockState();
       window.goTo(target);
+      syncTalkVisualState(target);
       return;
     }
 
     if (requiresAI) {
       if (typeof window.hasAIAccess === 'function' && window.hasAIAccess()) {
         window.goTo(target);
+        syncTalkVisualState(target);
       } else {
         safeGate('standalone');
       }
@@ -64,6 +108,7 @@
     if (target === 'breathing' || target === 'journal' || target === 'sleep' || target === 'talk') {
       if (typeof window.hasAccess === 'function' && window.hasAccess()) {
         window.goTo(target);
+        syncTalkVisualState(target);
       } else {
         safeGate('standalone');
       }
@@ -71,6 +116,7 @@
     }
 
     window.goTo(target);
+    syncTalkVisualState(target);
   }
 
   function getNavTarget(btn) {
@@ -110,6 +156,7 @@
 
   function init() {
     clearHelpLockState();
+    syncTalkVisualState('home');
     document.addEventListener('click', handleClick, true);
   }
 
