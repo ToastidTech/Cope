@@ -1,7 +1,15 @@
 (() => {
   'use strict';
 
+  function clearTalkActiveState() {
+    document.querySelectorAll('.bottom-nav .nav-btn').forEach(btn => {
+      const label = (btn.querySelector('.nav-label')?.textContent || '').trim().toLowerCase();
+      if (label === 'talk') btn.classList.remove('active');
+    });
+  }
+
   function safeGate(defaultPlan = 'standalone') {
+    clearTalkActiveState();
     if (typeof window.hasAccess === 'function' && window.hasAccess()) {
       if (typeof window.__copeOriginalOpenPaywall === 'function') {
         window.__copeOriginalOpenPaywall(defaultPlan);
