@@ -1,0 +1,28 @@
+name: Recover Index
+
+on:
+  push:
+    paths:
+      - .github/workflows/recover-index.yml
+
+permissions:
+  contents: write
+
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Restore index.html from previous commit
+        run: |
+          set -euo pipefail
+          git checkout HEAD^ -- index.html
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Recover index.html after accidental replacement"
+          git push
