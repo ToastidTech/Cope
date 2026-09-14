@@ -10,13 +10,15 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "./Copeai-logo.png",
+      "src": "./cope-pwa-icon.png",
       "type": "image/png",
+      "sizes": "1024x1024",
       "purpose": "any"
     },
     {
-      "src": "./Copeai-logo.png",
+      "src": "./cope-pwa-icon.png",
       "type": "image/png",
+      "sizes": "1024x1024",
       "purpose": "maskable"
     }
   ]
