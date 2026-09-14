@@ -34,7 +34,7 @@
       return;
     }
 
-    if (target === 'breathing' || target === 'journal' || target === 'sleep') {
+    if (target === 'breathing' || target === 'journal' || target === 'sleep' || target === 'talk') {
       if (typeof window.hasAccess === 'function' && window.hasAccess()) {
         window.goTo(target);
       } else {
@@ -78,7 +78,7 @@
 
     event.preventDefault();
     event.stopPropagation();
-    route(target, target === 'talk');
+    route(target, false);
   }
 
   function init() {
