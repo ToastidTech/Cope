@@ -191,9 +191,11 @@
     submit.style.display = '';
     submit.disabled = false;
     status.textContent = '';
-    document.getElementById('copeLeadForm').reset();
-    document.getElementById('copeRecoveryCode').value = '';
-    document.getElementById('copeRecoveryStatus').textContent = '';
+    document.getElementById('copeLeadForm')?.reset();
+    const recoveryCodeEl = document.getElementById('copeRecoveryCode');
+    if (recoveryCodeEl) recoveryCodeEl.value = '';
+    const recoveryStatusEl = document.getElementById('copeRecoveryStatus');
+    if (recoveryStatusEl) recoveryStatusEl.textContent = '';
     overlay.classList.add('open');
     overlay.setAttribute('aria-hidden','false');
     setTimeout(() => document.getElementById('copeLeadName')?.focus(),50);
