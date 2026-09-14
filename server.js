@@ -45,7 +45,7 @@ function validateLead(body) {
   const comment = typeof body?.comment === "string" ? body.comment.trim() : "";
   const deviceId = typeof body?.deviceId === "string" ? body.deviceId.trim() : "";
   if (!name || name.length > 120) return null;
-  if (!email || email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return null;
+  if (!email || email.length > 254 || !/^([^\s@]+)@([^\s@]+)\.[^\s@]+$/.test(email)) return null;
   if (comment.length > 2000) return null;
   if (!/^[A-Za-z0-9._:-]{16,200}$/.test(deviceId)) return null;
   return { name, email, comment, deviceId, submittedAt: new Date().toISOString() };
@@ -109,7 +109,7 @@ async function getAccessState(deviceId) {
   const master = rows.some(row => row.scope === "master");
   const standard = rows.some(row => row.scope === "standard" && Number(row.expiresAt) > Date.now());
   const ai = rows.some(row => row.scope === "ai" && Number(row.expiresAt) > Date.now());
-  return { master, standard: master || standard, ai: master || ai };
+  return { master, standard: master || standard || ai, ai: master || ai };
 }
 async function callAnthropic(body) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -134,11 +134,12 @@ app.get("/api/access", async (req, res) => {
     const trialRows = await readPromosByDevice(deviceId);
     const standardTrial = trialRows.filter(row => row.scope === "standard" && Number(row.expiresAt) > Date.now()).sort((a,b) => Number(b.expiresAt) - Number(a.expiresAt))[0];
     const aiTrial = trialRows.filter(row => row.scope === "ai" && Number(row.expiresAt) > Date.now()).sort((a,b) => Number(b.expiresAt) - Number(a.expiresAt))[0];
+    const effectiveStandardTrial = standardTrial || aiTrial;
     return send(res, 200, {
       active: access.standard,
       aiActive: access.ai,
       master: access.master,
-      expiresAt: access.master ? null : (standardTrial ? Number(standardTrial.expiresAt) : null),
+      expiresAt: access.master ? null : (effectiveStandardTrial ? Number(effectiveStandardTrial.expiresAt) : null),
       aiExpiresAt: access.master ? null : (aiTrial ? Number(aiTrial.expiresAt) : null)
     });
   } catch (error) { console.error("Access check error:", error); return send(res, 500, { error: "Access status could not be checked." }); }
