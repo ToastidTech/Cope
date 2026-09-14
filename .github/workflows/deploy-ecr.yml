@@ -54,7 +54,7 @@ jobs:
           aws ecs update-express-gateway-service \
             --region "$AWS_REGION" \
             --service-arn "$EXPRESS_SERVICE_ARN" \
-            --primary-container "image=$IMAGE_URI,containerPort=8080" \
+            --primary-container "image=$IMAGE_URI,containerPort=8080,secrets=[{name=ANTHROPIC_API_KEY,valueFrom=/cope/ANTHROPIC_API_KEY}]" \
             --monitor-resources
 
           echo "Cope Express Mode deployment started."
