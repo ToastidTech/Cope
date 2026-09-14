@@ -65,43 +65,7 @@
   }
 
   function injectTalkContrast() {
-    if (document.getElementById('cope-access-talk-contrast')) return;
-    const style = document.createElement('style');
-    style.id = 'cope-access-talk-contrast';
-    style.textContent = `
-      .bottom-nav .nav-btn { position:relative; }
-      .bottom-nav .nav-btn[onclick*="talk"] { -webkit-appearance:none !important; appearance:none !important; background:rgba(184,159,216,.10) !important; border:1px solid rgba(184,159,216,.32) !important; color:#d4bff5 !important; box-shadow:0 0 14px rgba(184,159,216,.10) !important; }
-      .bottom-nav .nav-btn[onclick*="talk"] .nav-icon { color:#d4bff5 !important; filter:drop-shadow(0 0 6px rgba(184,159,216,.55)) !important; }
-      .bottom-nav .nav-btn[onclick*="talk"] .nav-label { color:#c7b7df !important; }
-      .bottom-nav .nav-btn[onclick*="talk"].active,
-      .bottom-nav .nav-btn[onclick*="talk"]:hover,
-      .bottom-nav .nav-btn[onclick*="talk"]:focus,
-      .bottom-nav .nav-btn[onclick*="talk"]:active { background:rgba(184,159,216,.18) !important; border-color:rgba(184,159,216,.50) !important; color:#d4bff5 !important; }
-      #screen-talk, #screen-talk .screen-content { color:#c8c8e0 !important; background:#08080f !important; }
-      #screen-talk input#chatInput { background:rgba(184,159,216,.08) !important; color:#f0eeff !important; caret-color:#d4bff5 !important; }
-      #screen-talk input#chatInput::placeholder { color:#7a6a9a !important; }
-      #screen-talk button#sendBtn { color:#d4bff5 !important; background:rgba(184,159,216,.30) !important; border-color:rgba(184,159,216,.40) !important; }
-    `;
-    (document.head || document.documentElement).appendChild(style);
-
-    const talkButton = Array.from(document.querySelectorAll('.bottom-nav .nav-btn')).find(btn => {
-      const label = btn.querySelector('.nav-label');
-      return label && label.textContent.trim().toLowerCase() === 'talk';
-    });
-    if (talkButton) {
-      talkButton.style.setProperty('background', 'rgba(184,159,216,.18)', 'important');
-      talkButton.style.setProperty('border', '1px solid rgba(184,159,216,.50)', 'important');
-      talkButton.style.setProperty('color', '#d4bff5', 'important');
-      talkButton.style.setProperty('-webkit-appearance', 'none', 'important');
-      talkButton.style.setProperty('appearance', 'none', 'important');
-      const icon = talkButton.querySelector('.nav-icon');
-      const label = talkButton.querySelector('.nav-label');
-      if (icon) {
-        icon.textContent = '💬';
-        icon.style.setProperty('color', '#d4bff5', 'important');
-      }
-      if (label) label.style.setProperty('color', '#d4bff5', 'important');
-    }
+    // Talk styling is controlled by the normal navigation styling. Do not force a highlighted state here.
   }
 
   function syncLocks(active) {
@@ -220,6 +184,14 @@
     }
   }
 
+  function showIntroOnStart() {
+    if (isLocallyActive()) return;
+    if (localStorage.getItem(CAPTURED_KEY) === 'true') return;
+    if (typeof window.copeShowLeadPrompt === 'function') {
+      window.copeShowLeadPrompt('intro', true);
+    }
+  }
+
   function init() {
     injectTalkContrast();
     syncLocks(isLocallyActive());
@@ -228,11 +200,8 @@
     setInterval(() => {
       if (!isLocallyActive() && localStorage.getItem(CAPTURED_KEY) === 'true') refreshAccess();
     }, 3000);
-    setTimeout(() => {
-      if (!isLocallyActive() && localStorage.getItem(CAPTURED_KEY) !== 'true' && localStorage.getItem('copeLeadIntroShown_v6') !== '1' && typeof window.copeShowLeadPrompt === 'function') {
-        window.copeShowLeadPrompt('intro');
-      }
-    }, 900);
+    setTimeout(showIntroOnStart, 900);
+    setTimeout(showIntroOnStart, 2000);
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
