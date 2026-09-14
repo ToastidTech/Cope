@@ -15,12 +15,12 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 3
 
-      - name: Restore index.html from previous commit
+      - name: Restore index.html from known-good commit
         run: |
           set -euo pipefail
-          git checkout HEAD^ -- index.html
+          git checkout HEAD~2 -- index.html
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
