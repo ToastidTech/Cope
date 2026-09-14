@@ -77,8 +77,96 @@
     }
   };
 
+  function ensureHomePromoSection() {
+    const home = document.getElementById('screen-home');
+    if (!home || document.getElementById('homePromoCard')) return;
+
+    if (!document.getElementById('copeHomePromoStyles')) {
+      const style = document.createElement('style');
+      style.id = 'copeHomePromoStyles';
+      style.textContent = `
+        .home-promo-card {
+          background: linear-gradient(135deg, rgba(184,159,216,0.08), rgba(201,132,154,0.05));
+          border: 1px solid rgba(184,159,216,0.18);
+          border-radius: 18px;
+          padding: 18px;
+          margin: 6px 0 20px;
+        }
+        .home-promo-kicker {
+          font-size: .62rem;
+          letter-spacing: 3px;
+          color: var(--lav-dim);
+          text-transform: uppercase;
+          margin-bottom: 7px;
+          font-weight: 500;
+        }
+        .home-promo-title {
+          font-family: 'Cormorant Garamond', serif;
+          font-size: 1.25rem;
+          color: var(--white);
+          margin-bottom: 5px;
+        }
+        .home-promo-sub {
+          font-size: .72rem;
+          color: var(--dim);
+          line-height: 1.5;
+          margin-bottom: 12px;
+        }
+        .home-promo-row { display:flex; gap:8px; }
+        #promoQuickInput {
+          flex:1;
+          min-width:0;
+          box-sizing:border-box;
+          border:1px solid var(--border);
+          background:rgba(255,255,255,.03);
+          color:var(--white);
+          border-radius:12px;
+          padding:11px 12px;
+          font:inherit;
+          outline:none;
+        }
+        #promoQuickInput:focus { border-color:rgba(184,159,216,.45); }
+        #promoQuickApply {
+          flex-shrink:0;
+          border:1px solid rgba(184,159,216,.28);
+          background:rgba(184,159,216,.12);
+          color:var(--lav-bright);
+          border-radius:12px;
+          padding:0 15px;
+          cursor:pointer;
+          font:500 .78rem 'DM Sans',sans-serif;
+        }
+        #promoQuickApply:disabled { opacity:.55; cursor:default; }
+        #promoQuickMsg { min-height:18px; margin-top:9px; font-size:.7rem; line-height:1.4; }
+      `;
+      document.head.appendChild(style);
+    }
+
+    const card = document.createElement('div');
+    card.id = 'homePromoCard';
+    card.className = 'home-promo-card';
+    card.innerHTML = `
+      <div class="home-promo-kicker">Promo Code</div>
+      <div class="home-promo-title">Have a promo code?</div>
+      <div class="home-promo-sub">Enter your code here anytime. No need to return to the welcome screen.</div>
+      <div class="home-promo-row">
+        <input id="promoQuickInput" type="text" inputmode="text" autocomplete="off" placeholder="Enter promo code" aria-label="Promo code">
+        <button type="button" id="promoQuickApply">Apply</button>
+      </div>
+      <div id="promoQuickMsg" aria-live="polite"></div>`;
+
+    const powered = home.querySelector('.powered');
+    if (powered) home.insertBefore(card, powered);
+    else home.appendChild(card);
+
+    document.getElementById('promoQuickApply').addEventListener('click', window.applyPromo);
+    document.getElementById('promoQuickInput').addEventListener('keydown', event => {
+      if (event.key === 'Enter') window.applyPromo();
+    });
+  }
+
   function init() {
-    // Keep the Home promo-code section. Only the separate floating promo bubble was retired.
+    ensureHomePromoSection();
     const row = document.getElementById('confirmRow');
     if (row) row.style.display = '';
   }
