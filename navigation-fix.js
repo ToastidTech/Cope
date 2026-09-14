@@ -8,8 +8,21 @@
     });
   }
 
+  function clearHelpLockState() {
+    document.querySelectorAll('.bottom-nav .nav-btn').forEach(btn => {
+      const label = (btn.querySelector('.nav-label')?.textContent || '').trim().toLowerCase();
+      if (label !== 'help') return;
+      btn.classList.remove('locked');
+      btn.querySelectorAll('.locked, [class*="lock"], [id*="lock"]').forEach(el => {
+        el.classList.remove('locked');
+        el.style.display = 'none';
+      });
+    });
+  }
+
   function safeGate(defaultPlan = 'standalone') {
     clearTalkActiveState();
+    clearHelpLockState();
     if (typeof window.hasAccess === 'function' && window.hasAccess()) {
       if (typeof window.__copeOriginalOpenPaywall === 'function') {
         window.__copeOriginalOpenPaywall(defaultPlan);
@@ -33,6 +46,12 @@
   }
 
   function route(target, requiresAI) {
+    if (target === 'crisis') {
+      clearHelpLockState();
+      window.goTo(target);
+      return;
+    }
+
     if (requiresAI) {
       if (typeof window.hasAIAccess === 'function' && window.hasAIAccess()) {
         window.goTo(target);
@@ -90,6 +109,7 @@
   }
 
   function init() {
+    clearHelpLockState();
     document.addEventListener('click', handleClick, true);
   }
 
