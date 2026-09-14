@@ -69,13 +69,15 @@ const chatStyles = `<style id="cope-chat-contrast">
 #screen-talk button[onclick*="send"], #screen-talk button[type="submit"] { background: rgba(184,159,216,0.18) !important; border-color: rgba(184,159,216,0.42) !important; color: var(--white) !important; }
 .bottom-nav .nav-btn .nav-label { color: #a9a9c7 !important; }
 .bottom-nav .nav-btn.active .nav-label { color: var(--lav-bright) !important; text-shadow: 0 0 8px rgba(212,191,245,0.22); }
-.bottom-nav .nav-btn[onclick*="talk"] { background: rgba(184,159,216,0.10) !important; border: 1px solid rgba(184,159,216,0.32) !important; color: var(--lav-bright) !important; box-shadow: 0 0 14px rgba(184,159,216,0.10); }
+/* Talk must use normal navigation styling, not a permanent highlighted treatment. */
+.bottom-nav .nav-btn[onclick*="talk"] { background: transparent !important; border: 0 !important; color: inherit !important; box-shadow: none !important; }
 .bottom-nav .nav-btn[onclick*="talk"]:hover,
 .bottom-nav .nav-btn[onclick*="talk"]:focus,
 .bottom-nav .nav-btn[onclick*="talk"]:active,
-.bottom-nav .nav-btn[onclick*="talk"].active { background: rgba(184,159,216,0.18) !important; border-color: rgba(184,159,216,0.50) !important; color: var(--lav-bright) !important; }
-.bottom-nav .nav-btn[onclick*="talk"] .nav-icon { color: var(--lav-bright) !important; filter: drop-shadow(0 0 6px rgba(184,159,216,0.55)); }
-.bottom-nav .nav-btn[onclick*="talk"] .nav-label { color: #c7b7df !important; }
+.bottom-nav .nav-btn[onclick*="talk"].active { background: transparent !important; border-color: transparent !important; color: inherit !important; box-shadow: none !important; }
+.bottom-nav .nav-btn[onclick*="talk"] .nav-icon { color: var(--white) !important; filter: none !important; }
+.bottom-nav .nav-btn[onclick*="talk"] .nav-label { color: var(--text) !important; text-shadow: none !important; }
+.bottom-nav .nav-btn[onclick*="talk"].active .nav-label { color: var(--text) !important; }
 </style>`;
 
 if (html.includes('id="cope-chat-contrast"')) {
@@ -98,14 +100,14 @@ if (html.includes('lead-capture.js')) {
   html = html.replace('</body>', `  ${leadScript}\n</body>`);
 }
 
-const promoScript = '<script src="./promo-policy.js?v=3" defer></script>';
+const promoScript = '<script src="./promo-policy.js?v=4" defer></script>';
 if (html.includes('promo-policy.js')) {
   html = html.replace(/<script src="\.\/promo-policy\.js\?v=\d+" defer><\/script>/, promoScript);
 } else {
   html = html.replace('</body>', `  ${promoScript}\n</body>`);
 }
 
-const navigationFixScript = '<script src="./navigation-fix.js?v=4" defer></script>';
+const navigationFixScript = '<script src="./navigation-fix.js?v=5" defer></script>';
 if (html.includes('navigation-fix.js')) {
   html = html.replace(/<script src="\.\/navigation-fix\.js\?v=\d+" defer><\/script>/, navigationFixScript);
 } else {
