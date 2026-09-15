@@ -12,6 +12,8 @@ const PROMOS_FILE = process.env.COPE_PROMOS_FILE || path.join(__dirname, "data",
 const MASTER_PROMO_CODE = String(process.env.COPE_MASTER_PROMO_CODE || "TST2026").trim().toLowerCase();
 const AI_PROMO_CODE = String(process.env.COPE_AI_PROMO_CODE || "COPEAI3DAY").trim().toLowerCase();
 const TRIAL_DURATION_MS = 3 * 24 * 60 * 60 * 1000;
+const HUBSPOT_ACCESS_TOKEN = String(process.env.HUBSPOT_ACCESS_TOKEN || "").trim();
+const HUBSPOT_SOURCE = String(process.env.HUBSPOT_SOURCE || "Cope Lead Capture").trim();
 
 app.disable("x-powered-by");
 app.set("trust proxy", 1);
@@ -45,7 +47,7 @@ function validateLead(body) {
   const comment = typeof body?.comment === "string" ? body.comment.trim() : "";
   const deviceId = typeof body?.deviceId === "string" ? body.deviceId.trim() : "";
   if (!name || name.length > 120) return null;
-  if (!email || email.length > 254 || !/^([^\s@]+)@([^\s@]+)\.[^\s@]+$/.test(email)) return null;
+  if (!email || email.length > 254 || !/^([^\s@]+)@[^\s@]+\.[^\s@]+$/.test(email)) return null;
   if (comment.length > 2000) return null;
   if (!/^[A-Za-z0-9._:-]{16,200}$/.test(deviceId)) return null;
   return { name, email, comment, deviceId, submittedAt: new Date().toISOString() };
@@ -54,6 +56,61 @@ function validateDeviceId(deviceId) { return typeof deviceId === "string" && /^[
 async function appendJsonLine(file, value) { await fs.promises.mkdir(path.dirname(file), { recursive: true }); await fs.promises.appendFile(file, JSON.stringify(value) + "\n", "utf8"); }
 async function saveLead(lead) { await appendJsonLine(LEADS_FILE, lead); }
 async function savePromo(promo) { await appendJsonLine(PROMOS_FILE, promo); }
+
+async function syncLeadToHubSpot(lead) {
+  if (!HUBSPOT_ACCESS_TOKEN) {
+    console.warn("HubSpot sync skipped: HUBSPOT_ACCESS_TOKEN is not configured.");
+    return { synced: false, reason: "not_configured" };
+  }
+
+  const nameParts = lead.name.split(/\s+/).filter(Boolean);
+  const firstname = nameParts.shift() || lead.name;
+  const lastname = nameParts.join(" ");
+  const properties = {
+    email: lead.email,
+    firstname,
+    ...(lastname ? { lastname } : {}),
+    cope_source: HUBSPOT_SOURCE
+  };
+  const headers = {
+    "Authorization": `Bearer ${HUBSPOT_ACCESS_TOKEN}`,
+    "Content-Type": "application/json",
+    "Accept": "application/json"
+  };
+
+  const searchResponse = await fetch("https://api.hubapi.com/crm/v3/objects/contacts/search", {
+    method: "POST",
+    headers,
+    body: JSON.stringify({
+      filterGroups: [{ filters: [{ propertyName: "email", operator: "EQ", value: lead.email }] }],
+      properties: ["email", "firstname", "lastname", "cope_source"],
+      limit: 1
+    })
+  });
+  const searchData = await searchResponse.json().catch(() => ({}));
+  if (!searchResponse.ok) throw new Error(`HubSpot contact search failed (${searchResponse.status})`);
+
+  if (Array.isArray(searchData.results) && searchData.results.length > 0) {
+    const contactId = searchData.results[0].id;
+    const updateResponse = await fetch(`https://api.hubapi.com/crm/v3/objects/contacts/${encodeURIComponent(contactId)}`, {
+      method: "PATCH",
+      headers,
+      body: JSON.stringify({ properties })
+    });
+    if (!updateResponse.ok) throw new Error(`HubSpot contact update failed (${updateResponse.status})`);
+    return { synced: true, action: "updated", contactId };
+  }
+
+  const createResponse = await fetch("https://api.hubapi.com/crm/v3/objects/contacts", {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ properties })
+  });
+  const createData = await createResponse.json().catch(() => ({}));
+  if (!createResponse.ok) throw new Error(`HubSpot contact creation failed (${createResponse.status})`);
+  return { synced: true, action: "created", contactId: createData.id || null };
+}
+
 async function readPromosByDevice(deviceId) {
   const rows = [];
   try {
@@ -168,6 +225,12 @@ app.post("/api/lead", async (req, res) => {
     const alreadySaved = existingLead.split("\n").filter(Boolean).some(row => { try { return JSON.parse(row).deviceId === lead.deviceId; } catch (_) { return false; } });
     if (!alreadySaved) await saveLead(lead);
     const promo = await activateLeadTrial(lead.deviceId, lead.email);
+    try {
+      const hubspotResult = await syncLeadToHubSpot(lead);
+      console.log("HubSpot lead sync:", hubspotResult);
+    } catch (hubspotError) {
+      console.error("HubSpot lead sync failed; Cope capture remains successful:", hubspotError);
+    }
     return send(res, 201, { ok: true, message: "Your information was saved.", accessActive: true, expiresAt: promo.expiresAt, durationDays: 3 });
   } catch (error) { console.error("Lead capture error:", error); return send(res, 500, { error: "Lead submission could not be completed." }); }
 });
