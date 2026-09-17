@@ -12,7 +12,7 @@ const PROMOS_FILE = process.env.COPE_PROMOS_FILE || path.join(__dirname, "data",
 const MASTER_PROMO_CODE = String(process.env.COPE_MASTER_PROMO_CODE || "TST2026").trim().toLowerCase();
 const AI_PROMO_CODE = String(process.env.COPE_AI_PROMO_CODE || "COPEAI3DAY").trim().toLowerCase();
 const TRIAL_DURATION_MS = 3 * 24 * 60 * 60 * 1000;
-const HUBSPOT_ACCESS_TOKEN = String(process.env.HUBSPOT_ACCESS_TOKEN || "").trim();
+const HUBSPOT_ACCESS_TOKEN = String(process.env.HUBSPOT_ACCESS_TOKEN || "").trim().replace(/^[^\x21-\x7E]+/, "");
 const HUBSPOT_SOURCE = String(process.env.HUBSPOT_SOURCE || "Cope Lead Capture").trim();
 
 app.disable("x-powered-by");
@@ -47,7 +47,7 @@ function validateLead(body) {
   const comment = typeof body?.comment === "string" ? body.comment.trim() : "";
   const deviceId = typeof body?.deviceId === "string" ? body.deviceId.trim() : "";
   if (!name || name.length > 120) return null;
-  if (!email || email.length > 254 || !/^([^\s@]+)@[^\s@]+\.[^\s@]+$/.test(email)) return null;
+  if (!email || email.length > 254 || !/^(\S+@\S+\.\S+)$/.test(email)) return null;
   if (comment.length > 2000) return null;
   if (!/^[A-Za-z0-9._:-]{16,200}$/.test(deviceId)) return null;
   return { name, email, comment, deviceId, submittedAt: new Date().toISOString() };
