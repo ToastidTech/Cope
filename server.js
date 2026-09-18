@@ -14,6 +14,12 @@ const AI_PROMO_CODE = String(process.env.COPE_AI_PROMO_CODE || "COPEAI3DAY").tri
 const TRIAL_DURATION_MS = 3 * 24 * 60 * 60 * 1000;
 const HUBSPOT_ACCESS_TOKEN = String(process.env.HUBSPOT_ACCESS_TOKEN || "").trim().replace(/^[^\x21-\x7E]+/, "");
 const HUBSPOT_SOURCE = String(process.env.HUBSPOT_SOURCE || "Cope Lead Capture").trim();
+console.log("HubSpot runtime config:", {
+  envPresent: Object.prototype.hasOwnProperty.call(process.env, "HUBSPOT_ACCESS_TOKEN"),
+  envType: typeof process.env.HUBSPOT_ACCESS_TOKEN,
+  envLength: typeof process.env.HUBSPOT_ACCESS_TOKEN === "string" ? process.env.HUBSPOT_ACCESS_TOKEN.length : 0,
+  normalizedLength: HUBSPOT_ACCESS_TOKEN.length
+});
 
 app.disable("x-powered-by");
 app.set("trust proxy", 1);
