@@ -58,3 +58,5 @@ jobs:
             --monitor-resources
 
           echo "Cope Express Mode deployment started."
+
+# Redeploy after SSM execution-role permission update.
