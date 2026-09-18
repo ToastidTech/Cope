@@ -20,6 +20,11 @@ console.log("HubSpot runtime config:", {
   envLength: typeof process.env.HUBSPOT_ACCESS_TOKEN === "string" ? process.env.HUBSPOT_ACCESS_TOKEN.length : 0,
   normalizedLength: HUBSPOT_ACCESS_TOKEN.length
 });
+if (!HUBSPOT_ACCESS_TOKEN) {
+  console.warn("HubSpot warning: HUBSPOT_ACCESS_TOKEN is empty — lead sync will be skipped, not retried.");
+} else if (!HUBSPOT_ACCESS_TOKEN.startsWith("pat-")) {
+  console.warn("HubSpot warning: token does not look like a private-app token (expected pat- prefix) — verify the SSM value.");
+}
 
 app.disable("x-powered-by");
 app.set("trust proxy", 1);
@@ -63,6 +68,29 @@ async function appendJsonLine(file, value) { await fs.promises.mkdir(path.dirnam
 async function saveLead(lead) { await appendJsonLine(LEADS_FILE, lead); }
 async function savePromo(promo) { await appendJsonLine(PROMOS_FILE, promo); }
 
+async function hubspotRequest(method, url, properties, retriedWithoutSource) {
+  const headers = {
+    "Authorization": `Bearer ${HUBSPOT_ACCESS_TOKEN}`,
+    "Content-Type": "application/json",
+    "Accept": "application/json"
+  };
+  const response = await fetch(url, {
+    method,
+    headers,
+    body: JSON.stringify({ properties })
+  });
+  if (response.ok) return response.json().catch(() => ({}));
+  const errText = await response.text().catch(() => "");
+  // If HubSpot rejects our custom cope_source property (it doesn't exist in the
+  // portal), retry once without it instead of failing the whole sync.
+  if (!retriedWithoutSource && response.status === 400 && /cope_source/i.test(errText) && properties.cope_source !== undefined) {
+    console.warn("HubSpot rejected the cope_source property (probably missing in portal); retrying without it.");
+    const { cope_source: _dropped, ...rest } = properties;
+    return hubspotRequest(method, url, rest, true);
+  }
+  throw new Error(`HubSpot ${method} ${url} failed (${response.status}): ${errText.slice(0, 300)}`);
+}
+
 async function syncLeadToHubSpot(lead) {
   if (!HUBSPOT_ACCESS_TOKEN) {
     console.warn("HubSpot sync skipped: HUBSPOT_ACCESS_TOKEN is not configured.");
@@ -78,42 +106,33 @@ async function syncLeadToHubSpot(lead) {
     ...(lastname ? { lastname } : {}),
     cope_source: HUBSPOT_SOURCE
   };
-  const headers = {
-    "Authorization": `Bearer ${HUBSPOT_ACCESS_TOKEN}`,
-    "Content-Type": "application/json",
-    "Accept": "application/json"
-  };
 
   const searchResponse = await fetch("https://api.hubapi.com/crm/v3/objects/contacts/search", {
     method: "POST",
-    headers,
+    headers: {
+      "Authorization": `Bearer ${HUBSPOT_ACCESS_TOKEN}`,
+      "Content-Type": "application/json",
+      "Accept": "application/json"
+    },
     body: JSON.stringify({
       filterGroups: [{ filters: [{ propertyName: "email", operator: "EQ", value: lead.email }] }],
-      properties: ["email", "firstname", "lastname", "cope_source"],
+      properties: ["email", "firstname", "lastname"],
       limit: 1
     })
   });
+  if (!searchResponse.ok) {
+    const errText = await searchResponse.text().catch(() => "");
+    throw new Error(`HubSpot contact search failed (${searchResponse.status}): ${errText.slice(0, 300)}`);
+  }
   const searchData = await searchResponse.json().catch(() => ({}));
-  if (!searchResponse.ok) throw new Error(`HubSpot contact search failed (${searchResponse.status})`);
 
   if (Array.isArray(searchData.results) && searchData.results.length > 0) {
     const contactId = searchData.results[0].id;
-    const updateResponse = await fetch(`https://api.hubapi.com/crm/v3/objects/contacts/${encodeURIComponent(contactId)}`, {
-      method: "PATCH",
-      headers,
-      body: JSON.stringify({ properties })
-    });
-    if (!updateResponse.ok) throw new Error(`HubSpot contact update failed (${updateResponse.status})`);
+    await hubspotRequest("PATCH", `https://api.hubapi.com/crm/v3/objects/contacts/${encodeURIComponent(contactId)}`, properties, false);
     return { synced: true, action: "updated", contactId };
   }
 
-  const createResponse = await fetch("https://api.hubapi.com/crm/v3/objects/contacts", {
-    method: "POST",
-    headers,
-    body: JSON.stringify({ properties })
-  });
-  const createData = await createResponse.json().catch(() => ({}));
-  if (!createResponse.ok) throw new Error(`HubSpot contact creation failed (${createResponse.status})`);
+  const createData = await hubspotRequest("POST", "https://api.hubapi.com/crm/v3/objects/contacts", properties, false);
   return { synced: true, action: "created", contactId: createData.id || null };
 }
 
