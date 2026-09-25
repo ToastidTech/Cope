@@ -1258,6 +1258,7 @@ function updateAILockUI() {
 
   function goToSquare() {
     var url = selectedCopePlan === 'bundle' ? SQUARE_BUNDLE : SQUARE_STANDALONE;
+    try { gtag('event', 'begin_checkout', { currency: 'USD', value: selectedCopePlan === 'bundle' ? 19.99 : 12.99, items: [{ item_name: 'Cope ' + selectedCopePlan }] }); } catch (_) {}
     window.open(url, '_blank');
     // Switch modal to confirmation-entry mode
     var sheet = document.getElementById('paywallModal').querySelector('.modal-sheet');
@@ -1311,6 +1312,7 @@ function updateAILockUI() {
   .then(function(data) {
     if (data.success || data.unlocked) {
       grantAccess();
+      try { gtag('event', 'purchase', { currency: 'USD', value: selectedCopePlan === 'bundle' ? 19.99 : 12.99, transaction_id: 'cope-' + Date.now(), items: [{ item_name: 'Cope ' + selectedCopePlan }] }); } catch (_) {}
       msg.innerHTML = '<span style="color:var(--green)">✓ Payment verified! Welcome to Cope. 💜</span>';
       setTimeout(function() { closePaywall(); renderHome(); }, 1800);
     } else {
