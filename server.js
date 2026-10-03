@@ -30,6 +30,38 @@ app.disable("x-powered-by");
 app.set("trust proxy", 1);
 app.use(express.json({ limit: "1mb" }));
 
+// === TEMPORARY MAINTENANCE LOCKOUT (2026-10-03) — revert this block to restore service ===
+const MAINTENANCE_PAGE = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Temporarily Offline</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#08080f; color:#e8e8f0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; min-height:100vh; display:flex; align-items:center; justify-content:center; text-align:center; padding:24px; }
+  .card { max-width:420px; }
+  h1 { font-size:28px; margin-bottom:16px; font-weight:600; }
+  p { color:#a9a9c0; line-height:1.6; font-size:16px; }
+  .brand { margin-top:32px; font-size:13px; color:#5c5c72; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>Temporarily offline</h1>
+    <p>We're performing maintenance and will be back shortly. Thanks for your patience.</p>
+    <div class="brand">Toastid Tech, LLC</div>
+  </div>
+</body>
+</html>`;
+app.use((req, res, next) => {
+  if (req.path === "/health") return next();
+  if (req.path.startsWith("/api/") || req.method !== "GET")
+    return res.status(503).json({ error: "Service temporarily offline for maintenance." });
+  return res.status(503).send(MAINTENANCE_PAGE);
+});
+// === END MAINTENANCE LOCKOUT ===
+
 function corsHeaders(res) {
   const allowedOrigin = process.env.COPE_ALLOWED_ORIGIN || "*";
   res.set({
